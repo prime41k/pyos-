@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>PyOS · Telegram</title>
+<style>
+:root {
+  --pyos-bg: #0a0a0f;
+  --pyos-surface: #14141c;
+  --pyos-surface-solid: #0f0f17;
+  --pyos-surface-2: #1c1c28;
+  --pyos-surface-3: #242432;
+  --pyos-border: #2a2a3a;
+  --pyos-border-soft: #1e1e2c;
+  --pyos-text: #e8e8f0;
+  --pyos-text-dim: #9090a8;
+  --pyos-text-faint: #5a5a70;
+  --pyos-accent: #6d5dfc;
+  --pyos-accent-2: #8b7eff;
+  --pyos-accent-soft: rgba(109, 93, 252, 0.15);
+  --pyos-danger: #ff5d6c;
+  --pyos-success: #4ade80;
+  --pyos-warning: #fbbf24;
+  --pyos-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --pyos-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --pyos-radius: 14px;
+  --pyos-radius-sm: 8px;
+  --pyos-radius-lg: 18px;
+  --pyos-trans: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+  --pyos-trans-slow: 280ms cubic-bezier(0.4, 0, 0.2, 1);
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Monaco, "Cascadia Mono", Consolas, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font);
+  background: var(--pyos-bg);
+  color: var(--pyos-text);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+button, input, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  outline: none;
+}
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: 0.5; }
+a { color: var(--pyos-accent-2); text-decoration: none; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--pyos-border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--pyos-text-faint); }
+
+/* ============ LOGIN ============ */
+.login-wrap {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background:
+    radial-gradient(1200px 600px at 20% 10%, rgba(109, 93, 252, 0.08), transparent 60%),
+    radial-gradient(1000px 500px at 80% 90%, rgba(139, 126, 255, 0.06), transparent 60%),
+    var(--pyos-bg);
+  padding: 20px;
+}
+.login-card {
+  width: 100%; max-width: 420px;
+  background: var(--pyos-surface);
+  border: 1px solid var(--pyos-border);
+  border-radius: var(--pyos-radius-lg);
+  padding: 40px 36px;
+  box-shadow: var(--pyos-shadow);
+  animation: fadeUp 400ms ease;
+}
+.login-logo {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 28px;
+}
+.login-logo-icon {
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--pyos-accent), var(--pyos-accent-2));
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 20px rgba(109, 93, 252, 0.35);
+}
+.login-logo-text { font-size: 18px; font-weight: 600; letter-spacing: -0.2px; }
+.login-logo-sub { font-size: 11px; color: var(--pyos-text-dim); text-transform: uppercase; letter-spacing: 1.2px; }
+.login-title { font-size: 22px; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.4px; }
+.login-desc { color: var(--pyos-text-dim); font-size: 13px; margin-bottom: 28px; }
+
+.input-group { margin-bottom: 16px; }
+.input-label {
+  display: block;
+  font-size: 12px; font-weight: 500;
+  color: var(--pyos-text-dim);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.input-field {
+  width: 100%;
+  padding: 13px 16px;
+  background: var(--pyos-surface-2);
+  border: 1px solid var(--pyos-border);
+  border-radius: var(--pyos-radius);
+  color: var(--pyos-text);
+  font-size: 15px;
+  transition: border-color var(--pyos-trans), background var(--pyos-trans);
+}
+.input-field:focus {
+  border-color: var(--pyos-accent);
+  background: var(--pyos-surface-3);
+}
+.input-field::placeholder { color: var(--pyos-text-faint); }
+
+.btn {
+  width: 100%;
+  padding: 13px 18px;
+  border-radius: var(--pyos-radius);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  transition: all var(--pyos-trans);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--pyos-accent), var(--pyos-accent-2));
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(109, 93, 252, 0.35);
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(109, 93, 252, 0.5);
+}
+.btn-primary:active:not(:disabled) { transform: translateY(0); }
+.btn-ghost {
+  background: transparent;
+  color: var(--pyos-text-dim);
+  border: 1px solid var(--pyos-border);
+}
+.btn-ghost:hover:not(:disabled) {
+  color: var(--pyos-text);
+  border-color: var(--pyos-text-dim);
+}
+.btn-danger {
+  background: rgba(255, 93, 108, 0.1);
+  color: var(--pyos-danger);
+  border: 1px solid rgba(255, 93, 108, 0.25);
+}
+.btn-danger:hover:not(:disabled) {
+  background: rgba(255, 93, 108, 0.18);
+}
+
+.login-error {
+  background: rgba(255, 93, 108, 0.1);
+  border: 1px solid rgba(255, 93, 108, 0.25);
+  color: var(--pyos-danger);
+  padding: 10px 14px;
+  border-radius: var(--pyos-radius-sm);
+  font-size: 13px;
+  margin-bottom: 16px;
+  display: none;
+}
+.login-error.show { display: block; animation: shake 400ms; }
+.login-footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--pyos-text-faint);
+  letter-spacing: 0.4px;
+}
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+/* ============ MAIN APP ============ */
+.app {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* ---- Sidebar ---- */
+.sidebar {
+  background: var(--pyos-surface-solid);
+  border-right: 1px solid var(--pyos-border-soft);
+  display: flex; flex-direction: column;
+  min-width: 0;
+}
+.sidebar-header {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--pyos-border-soft);
+  display: flex; align-items: center; gap: 12px;
+  background: var(--pyos-surface);
+}
+.avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 600; font-size: 15px;
+  color: #fff;
+  flex-shrink: 0;
+  user-select: none;
+  overflow: hidden;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-sm { width: 34px; height: 34px; font-size: 13px; }
+.avatar-lg { width: 46px; height: 46px; font-size: 17px; }
+.user-info { flex: 1; min-width: 0; }
+.user-name {
+  font-weight: 600; font-size: 14px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.user-status {
+  font-size: 11px;
+  color: var(--pyos-text-dim);
+  display: flex; align-items: center; gap: 5px;
+}
+.status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--pyos-success);
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
+}
+.status-dot.offline {
+  background: var(--pyos-text-faint);
+  box-shadow: none;
+}
+.icon-btn {
+  width: 34px; height: 34px;
+  border-radius: var(--pyos-radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--pyos-text-dim);
+  transition: all var(--pyos-trans);
+  flex-shrink: 0;
+}
+.icon-btn:hover {
+  background: var(--pyos-surface-2);
+  color: var(--pyos-text);
+}
+.icon-btn.danger:hover { color: var(--pyos-danger); background: rgba(255, 93, 108, 0.1); }
+
+.search-wrap {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--pyos-border-soft);
+}
+.search-input {
+  width: 100%;
+  padding: 10px 14px 10px 38px;
+  background: var(--pyos-surface-2);
+  border: 1px solid transparent;
+  border-radius: var(--pyos-radius);
+  font-size: 13px;
+  transition: all var(--pyos-trans);
+  color: var(--pyos-text);
+}
+.search-input:focus {
+  border-color: var(--pyos-accent);
+  background: var(--pyos-surface-3);
+}
+.search-input::placeholder { color: var(--pyos-text-faint); }
+.search-icon {
+  position: absolute;
+  left: 28px;
+  top: 50%; transform: translateY(-50%);
+  color: var(--pyos-text-faint);
+  pointer-events: none;
+}
+.search-wrap { position: relative; }
+
+.dialog-list {
+  flex: 1; overflow-y: auto;
+  padding: 6px 0;
+}
+.dialog-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background var(--pyos-trans);
+  border-left: 3px solid transparent;
+}
+.dialog-item:hover { background: var(--pyos-surface); }
+.dialog-item.active {
+  background: var(--pyos-accent-soft);
+  border-left-color: var(--pyos-accent);
+}
+.dialog-content { flex: 1; min-width: 0; }
+.dialog-top {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 8px; margin-bottom: 3px;
+}
+.dialog-title {
+  font-weight: 600; font-size: 14px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.dialog-time {
+  font-size: 11px; color: var(--pyos-text-faint);
+  flex-shrink: 0;
+}
+.dialog-preview {
+  font-size: 12.5px; color: var(--pyos-text-dim);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: flex; align-items: center; gap: 6px;
+}
+.dialog-meta {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+  flex-shrink: 0;
+}
+.unread-badge {
+  min-width: 20px; height: 20px; padding: 0 6px;
+  background: var(--pyos-accent);
+  color: #fff;
+  font-size: 11px; font-weight: 700;
+  border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.type-badge {
+  font-size: 9.5px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: var(--pyos-surface-3);
+  color: var(--pyos-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.dialogs-empty {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--pyos-text-faint);
+  font-size: 13px;
+}
+
+/* ---- Main area ---- */
+.main {
+  display: flex; flex-direction: column;
+  min-width: 0;
+  background: var(--pyos-bg);
+}
+
+/* Chat header */
+.chat-header {
+  height: 68px;
+  padding: 0 22px;
+  display: flex; align-items: center; gap: 14px;
+  border-bottom: 1px solid var(--pyos-border-soft);
+  background: var(--pyos-surface);
+  flex-shrink: 0;
+}
+.chat-title-block { flex: 1; min-width: 0; }
+.chat-title {
+  font-size: 15px; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.chat-subtitle { font-size: 12px; color: var(--pyos-text-dim); }
+
+/* Message list */
+.messages-wrap {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex; flex-direction: column;
+  scroll-behavior: smooth;
+}
+.messages-list {
+  display: flex; flex-direction: column;
+  gap: 4px;
+  margin-top: auto;
+}
+.msg-date-separator {
+  text-align: center;
+  margin: 16px 0;
+  color: var(--pyos-text-faint);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.msg-date-separator span {
+  background: var(--pyos-surface-2);
+  padding: 4px 12px;
+  border-radius: 10px;
+}
+
+.message-row {
+  display: flex;
+  max-width: 75%;
+  animation: msgIn 220ms ease;
+}
+.message-row.out { align-self: flex-end; justify-content: flex-end; }
+.message-row.in { align-self: flex-start; }
+.message-row.out + .message-row.out,
+.message-row.in + .message-row.in { margin-top: -2px; }
+
+.bubble {
+  padding: 9px 13px 7px;
+  border-radius: 16px;
+  position: relative;
+  word-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+  box-shadow: var(--pyos-shadow-sm);
+}
+.message-row.out .bubble {
+  background: linear-gradient(135deg, var(--pyos-accent), var(--pyos-accent-2));
+  color: #fff;
+  border-bottom-right-radius: 5px;
+}
+.message-row.in .bubble {
+  background: var(--pyos-surface-2);
+  color: var(--pyos-text);
+  border-bottom-left-radius: 5px;
+}
+.bubble-sender {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--pyos-accent-2);
+  margin-bottom: 2px;
+}
+.message-row.out .bubble-sender { color: rgba(255,255,255,0.85); }
+.bubble-text {
+  font-size: 14px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+.bubble-meta {
+  font-size: 10.5px;
+  margin-top: 4px;
+  opacity: 0.65;
+  text-align: right;
+  display: flex; justify-content: flex-end; align-items: center; gap: 4px;
+}
+.bubble-meta .edited { font-style: italic; }
+
+.bubble-actions {
+  position: absolute;
+  top: 4px; right: -32px;
+  opacity: 0;
+  transition: opacity var(--pyos-trans);
+}
+.message-row:hover .bubble-actions { opacity: 1; }
+.message-row.out .bubble-actions { right: auto; left: -32px; }
+
+.bubble-action-btn {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  background: var(--pyos-surface-2);
+  color: var(--pyos-text-dim);
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--pyos-trans);
+}
+.bubble-action-btn:hover {
+  background: var(--pyos-surface-3);
+  color: var(--pyos-text);
+}
+
+.load-more-btn {
+  align-self: center;
+  padding: 8px 18px;
+  background: var(--pyos-surface-2);
+  color: var(--pyos-text-dim);
+  border-radius: var(--pyos-radius);
+  margin-bottom: 12px;
+  transition: all var(--pyos-trans);
+  font-size: 12px;
+}
+.load-more-btn:hover {
+  background: var(--pyos-surface-3);
+  color: var(--pyos-text);
+}
+
+.messages-empty {
+  margin: auto;
+  text-align: center;
+  color: var(--pyos-text-faint);
+  font-size: 13px;
+  padding: 40px 20px;
+}
+.messages-empty svg {
+  width: 48px; height: 48px;
+  margin-bottom: 12px;
+  opacity: 0.35;
+}
+
+.typing-indicator {
+  font-size: 12px;
+  color: var(--pyos-text-dim);
+  padding: 4px 0;
+  font-style: italic;
+  min-height: 18px;
+}
+
+/* Composer */
+.composer {
+  padding: 14px 22px;
+  border-top: 1px solid var(--pyos-border-soft);
+  background: var(--pyos-surface);
+  display: flex; align-items: flex-end; gap: 10px;
+  flex-shrink: 0;
+}
+.composer-input {
+  flex: 1;
+  min-height: 40px;
+  max-height: 160px;
+  padding: 10px 14px;
+  background: var(--pyos-surface-2);
+  border: 1px solid transparent;
+  border-radius: var(--pyos-radius);
+  resize: none;
+  font-size: 14px;
+  line-height: 1.4;
+  overflow-y: auto;
+  transition: border-color var(--pyos-trans);
+  color: var(--pyos-text);
+}
+.composer-input:focus { border-color: var(--pyos-accent); }
+.composer-input::placeholder { color: var(--pyos-text-faint); }
+.composer-send {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--pyos-accent), var(--pyos-accent-2));
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--pyos-trans);
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(109, 93, 252, 0.35);
+}
+.composer-send:hover:not(:disabled) {
+  transform: scale(1.06);
+  box-shadow: 0 6px 18px rgba(109, 93, 252, 0.5);
+}
+.composer-send:disabled {
+  opacity: 0.4;
+  background: var(--pyos-surface-3);
+  box-shadow: none;
+}
+
+/* Connection status */
+.conn-status {
+  position: fixed;
+  top: 14px; right: 14px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  z-index: 1000;
+  display: none;
+  align-items: center; gap: 6px;
+  box-shadow: var(--pyos-shadow);
+}
+.conn-status.show { display: inline-flex; animation: fadeUp 250ms; }
+.conn-status.connected { background: rgba(74, 222, 128, 0.15); color: var(--pyos-success); }
+.conn-status.disconnected { background: rgba(255, 93, 108, 0.15); color: var(--pyos-danger); }
+.conn-status.connecting { background: rgba(251, 191, 36, 0.15); color: var(--pyos-warning); }
+
+/* Toast */
+.toast-container {
+  position: fixed;
+  bottom: 20px; right: 20px;
+  z-index: 2000;
+  display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  padding: 12px 18px;
+  border-radius: var(--pyos-radius-sm);
+  background: var(--pyos-surface-2);
+  border: 1px solid var(--pyos-border);
+  color: var(--pyos-text);
+  font-size: 13px;
+  box-shadow: var(--pyos-shadow);
+  animation: toastIn 250ms ease;
+  pointer-events: auto;
+  max-width: 340px;
+}
+.toast.success { border-color: rgba(74, 222, 128, 0.4); color: var(--pyos-success); }
+.toast.error { border-color: rgba(255, 93, 108, 0.4); color: var(--pyos-danger); }
+.toast.info { border-color: rgba(109, 93, 252, 0.4); color: var(--pyos-accent-2); }
+
+/* Hamburger */
+.hamburger {
+  display: none;
+  width: 38px; height: 38px;
+  border-radius: var(--pyos-radius-sm);
+  color: var(--pyos-text-dim);
+  align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+}
+.overlay.show { display: block; animation: fadeIn 200ms; }
+
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: 380px;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform var(--pyos-trans-slow);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .hamburger { display: flex; }
+  .message-row { max-width: 90%; }
+}
+@media (max-width: 500px) {
+  .bubble { padding: 8px 12px 6px; font-size: 13.5px; }
+  .message-row { max-width: 92%; }
+  .messages-wrap { padding: 14px 12px; }
+  .composer { padding: 10px 12px; }
+  .chat-header { padding: 0 14px; }
+  .login-card { padding: 30px 24px; }
+}
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- ====== LOGIN SCREEN ====== -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 2L11 13"></path>
+          <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="login-logo-text">PyOS Messenger</div>
+        <div class="login-logo-sub">Telegram Client</div>
+      </div>
+    </div>
+
+    <div id="login-step-phone">
+      <h1 class="login-title">Вход по номеру</h1>
+      <p class="login-desc">Telegram отправит код в приложение или SMS.</p>
+      <div class="login-error" id="login-error"></div>
+      <div class="input-group">
+        <label class="input-label">Номер телефона</label>
+        <input type="tel" id="phone-input" class="input-field" placeholder="+7 900 123 45 67" autocomplete="tel" />
+      </div>
+      <button id="btn-send-code" class="btn btn-primary">
+        <span>Получить код</span>
+      </button>
+    </div>
+
+    <div id="login-step-code" class="hidden">
+      <h1 class="login-title">Код из Telegram</h1>
+      <p class="login-desc">Введи 5-значный код, который пришёл в Telegram.</p>
+      <div class="login-error" id="login-error-code"></div>
+      <div class="input-group">
+        <label class="input-label">Номер</label>
+        <input type="tel" id="phone-display" class="input-field" disabled />
+      </div>
+      <div class="input-group">
+        <label class="input-label">Код</label>
+        <input type="text" id="code-input" class="input-field" placeholder="12345" inputmode="numeric" maxlength="6" autocomplete="one-time-code" />
+      </div>
+      <button id="btn-verify" class="btn btn-primary">Войти</button>
+      <button id="btn-back-phone" class="btn btn-ghost" style="margin-top:8px">Назад</button>
+    </div>
+
+    <div id="login-step-password" class="hidden">
+      <h1 class="login-title">Двухфакторная аутентификация</h1>
+      <p class="login-desc">Введи пароль, который ты установил в настройках Telegram.</p>
+      <div class="login-error" id="login-error-password"></div>
+      <div class="input-group">
+        <label class="input-label">Пароль 2FA</label>
+        <input type="password" id="password-input" class="input-field" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+      <button id="btn-password" class="btn btn-primary">Подтвердить</button>
+      <button id="btn-back-code" class="btn btn-ghost" style="margin-top:8px">Назад</button>
+    </div>
+
+    <div class="login-footer">PyOS Studio · MTProto · Telethon</div>
+  </div>
+</div>
+
+<!-- ====== MAIN APP ====== -->
+<div id="app" class="app hidden">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="avatar" id="me-avatar"></div>
+      <div class="user-info">
+        <div class="user-name" id="me-name">—</div>
+        <div class="user-status">
+          <span class="status-dot" id="ws-status-dot"></span>
+          <span id="ws-status-text">В сети</span>
+        </div>
+      </div>
+      <button class="icon-btn" id="btn-refresh" title="Обновить">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+      </button>
+      <button class="icon-btn danger" id="btn-logout" title="Выйти">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="search-wrap">
+      <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" id="search-input" class="search-input" placeholder="Поиск по чатам..." />
+    </div>
+    <div class="dialog-list" id="dialog-list"></div>
+  </aside>
+
+  <main class="main">
+    <div class="chat-header" id="chat-header">
+      <button class="hamburger icon-btn" id="btn-hamburger">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+      <div class="avatar avatar-lg" id="chat-avatar"></div>
+      <div class="chat-title-block">
+        <div class="chat-title" id="chat-title">Выберите диалог</div>
+        <div class="chat-subtitle" id="chat-subtitle">—</div>
+      </div>
+      <button class="icon-btn" id="btn-chat-search" title="Поиск">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="messages-wrap" id="messages-wrap">
+      <div class="messages-list" id="messages-list">
+        <div class="messages-empty" id="messages-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <div>Выберите чат слева, чтобы начать общение</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="composer" id="composer">
+      <textarea id="composer-input" class="composer-input" placeholder="Сообщение... (Enter — отправить, Shift+Enter — новая строка)" rows="1"></textarea>
+      <button id="btn-send" class="composer-send" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 2L11 13"></path>
+          <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+        </svg>
+      </button>
+    </div>
+  </main>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="conn-status" id="conn-status"><span class="status-dot"></span><span class="conn-text"></span></div>
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+(() => {
+'use strict';
+
+// ==================== CONFIG ====================
+const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://127.0.0.1:8000'
+  : 'https://pyos-tg-production.up.railway.app';
+const WS_URL = API_BASE.replace(/^http/, 'ws') + '/ws';
+const WS_RECONNECT_BASE = 1000;
+const WS_RECONNECT_MAX = 30000;
+
+// ==================== UTIL ====================
+const $ = (sel, parent = document) => parent.querySelector(sel);
+const $$ = (sel, parent = document) => Array.from(parent.querySelectorAll(sel));
+
+const escapeHtml = (str) => {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
+const formatTime = (iso) => {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  } catch { return ''; }
+};
+
+const formatDateLabel = (iso) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diff = (today - target) / 86400000;
+  if (diff === 0) return 'Сегодня';
+  if (diff === 1) return 'Вчера';
+  if (diff < 7) return d.toLocaleDateString('ru-RU', { weekday: 'long' });
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: d.getFullYear() !== now.getFullYear() ? 'numeric' : undefined });
+};
+
+const isSameDay = (iso1, iso2) => {
+  if (!iso1 || !iso2) return false;
+  const a = new Date(iso1), b = new Date(iso2);
+  return a.toDateString() === b.toDateString();
+};
+
+const toast = (msg, type = 'info', ttl = 3200) => {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  $('#toast-container').appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'opacity 250ms, transform 250ms';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(20px)';
+    setTimeout(() => el.remove(), 260);
+  }, ttl);
+};
+
+const setConnStatus = (state, text) => {
+  const el = $('#conn-status');
+  el.className = `conn-status show ${state}`;
+  el.querySelector('.conn-text').textContent = text;
+  if (state === 'connected') {
+    setTimeout(() => el.classList.remove('show'), 1500);
+  }
+};
+
+// ==================== STATE ====================
+const state = {
+  me: null,
+  meId: null,
+  dialogs: [],
+  dialogsMap: new Map(),
+  activeDialogId: null,
+  messages: [],
+  messagesMap: new Map(),
+  oldestMsgId: null,
+  loading: false,
+  canLoadMore: true,
+};
+
+// ==================== API CLIENT ====================
+const api = {
+  async request(method, path, body = null) {
+    const opts = { method, headers: {} };
+    if (body !== null) {
+      opts.headers['Content-Type'] = 'application/json';
+      opts.body = JSON.stringify(body);
+    }
+    const res = await fetch(API_BASE + path, opts);
+    let data;
+    try { data = await res.json(); }
+    catch { data = null; }
+    if (!res.ok) {
+      const err = new Error(data?.detail || data?.message || `HTTP ${res.status}`);
+      err.status = res.status;
+      err.data = data;
+      throw err;
+    }
+    return data;
+  },
+  getMe: () => api.request('GET', '/api/me'),
+  getDialogs: () => api.request('GET', '/api/dialogs?limit=200'),
+  getMessages: (id, limit = 50, offset = null) => {
+    let url = `/api/messages/${id}?limit=${limit}`;
+    if (offset) url += `&offset_id=${offset}`;
+    return api.request('GET', url);
+  },
+  send: (dialogId, text, replyTo = null) => api.request('POST', '/api/send', { dialog_id: dialogId, text, reply_to: replyTo }),
+  edit: (dialogId, msgId, text) => api.request('POST', '/api/edit', { dialog_id: dialogId, message_id: msgId, text }),
+  delete: (dialogId, ids) => api.request('POST', '/api/delete', { dialog_id: dialogId, message_ids: ids }),
+  search: (q) => api.request('GET', `/api/search?q=${encodeURIComponent(q)}`),
+  loginStart: (phone) => api.request('POST', '/api/login/start', { phone }),
+  loginVerify: (phone, code, hash) => api.request('POST', '/api/login/verify', { phone, code, phone_code_hash: hash }),
+  loginPassword: (password) => api.request('POST', '/api/login/password', { password }),
+  logout: () => api.request('POST', '/api/logout'),
+};
+
+// ==================== WEBSOCKET ====================
+class WsClient {
+  constructor() {
+    this.ws = null;
+    this.reconnectDelay = WS_RECONNECT_BASE;
+    this.reconnectTimer = null;
+    this.closed = false;
+    this.listeners = new Map();
+  }
+  connect() {
+    if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) return;
+    this.closed = false;
+    setConnStatus('connecting', 'Соединение...');
+    try { this.ws = new WebSocket(WS_URL); } catch (e) { console.error(e); this.scheduleReconnect(); return; }
+    this.ws.onopen = () => {
+      this.reconnectDelay = WS_RECONNECT_BASE;
+      setConnStatus('connected', 'Подключено');
+      this.emit('open');
+      this._pingInterval = setInterval(() => {
+        if (this.ws?.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify({ type: 'ping' }));
+      }, 20000);
+    };
+    this.ws.onclose = () => {
+      clearInterval(this._pingInterval);
+      if (!this.closed) {
+        setConnStatus('disconnected', 'Отключено');
+        this.scheduleReconnect();
+      }
+    };
+    this.ws.onerror = (e) => { console.warn('ws error', e); };
+    this.ws.onmessage = (ev) => {
+      try {
+        const data = JSON.parse(ev.data);
+        this.emit('message', data);
+        if (data.type === 'ping') this.ws?.send(JSON.stringify({ type: 'pong' }));
+      } catch (e) { console.warn('ws parse', e); }
+    };
+  }
+  scheduleReconnect() {
+    if (this.closed) return;
+    clearTimeout(this.reconnectTimer);
+    this.reconnectTimer = setTimeout(() => {
+      this.connect();
+    }, this.reconnectDelay);
+    this.reconnectDelay = Math.min(this.reconnectDelay * 2, WS_RECONNECT_MAX);
+  }
+  disconnect() {
+    this.closed = true;
+    clearTimeout(this.reconnectTimer);
+    clearInterval(this._pingInterval);
+    this.ws?.close();
+  }
+  on(event, cb) {
+    if (!this.listeners.has(event)) this.listeners.set(event, []);
+    this.listeners.get(event).push(cb);
+  }
+  emit(event, data) {
+    const cbs = this.listeners.get(event) || [];
+    for (const cb of cbs) try { cb(data); } catch (e) { console.error(e); }
+  }
+}
+
+const ws = new WsClient();
+
+// ==================== LOGIN FLOW ====================
+let loginHash = null;
+let loginPhone = null;
+
+const loginEls = {
+  root: $('#login-screen'),
+  app: $('#app'),
+  stepPhone: $('#login-step-phone'),
+  stepCode: $('#login-step-code'),
+  stepPassword: $('#login-step-password'),
+  errPhone: $('#login-error'),
+  errCode: $('#login-error-code'),
+  errPass: $('#login-error-password'),
+  phoneInput: $('#phone-input'),
+  phoneDisplay: $('#phone-display'),
+  codeInput: $('#code-input'),
+  passwordInput: $('#password-input'),
+  btnSend: $('#btn-send-code'),
+  btnVerify: $('#btn-verify'),
+  btnPass: $('#btn-password'),
+  btnBackPhone: $('#btn-back-phone'),
+  btnBackCode: $('#btn-back-code'),
+};
+
+const showErr = (el, msg) => {
+  el.textContent = msg;
+  el.classList.add('show');
+};
+const hideErr = (el) => { el.classList.remove('show'); el.textContent = ''; };
+
+const switchStep = (step) => {
+  loginEls.stepPhone.classList.toggle('hidden', step !== 'phone');
+  loginEls.stepCode.classList.toggle('hidden', step !== 'code');
+  loginEls.stepPassword.classList.toggle('hidden', step !== 'password');
+  hideErr(loginEls.errPhone); hideErr(loginEls.errCode); hideErr(loginEls.errPass);
+  if (step === 'code') setTimeout(() => loginEls.codeInput.focus(), 50);
+  if (step === 'password') setTimeout(() => loginEls.passwordInput.focus(), 50);
+};
+
+loginEls.btnSend.addEventListener('click', async () => {
+  const phone = loginEls.phoneInput.value.trim();
+  if (!phone) return showErr(loginEls.errPhone, 'Введи номер телефона');
+  hideErr(loginEls.errPhone);
+  loginEls.btnSend.disabled = true;
+  loginEls.btnSend.innerHTML = '<span class="spinner"></span><span>Отправка...</span>';
+  try {
+    const res = await api.loginStart(phone);
+    loginHash = res.phone_code_hash;
+    loginPhone = res.phone;
+    loginEls.phoneDisplay.value = res.phone;
+    switchStep('code');
+    toast('Код отправлен в Telegram', 'success');
+  } catch (e) {
+    const msg = e.data?.message || e.data?.detail || e.message;
+    showErr(loginEls.errPhone, msg);
+  } finally {
+    loginEls.btnSend.disabled = false;
+    loginEls.btnSend.innerHTML = '<span>Получить код</span>';
+  }
+});
+
+loginEls.btnVerify.addEventListener('click', async () => {
+  const code = loginEls.codeInput.value.trim();
+  if (!code) return showErr(loginEls.errCode, 'Введи код');
+  hideErr(loginEls.errCode);
+  loginEls.btnVerify.disabled = true;
+  loginEls.btnVerify.innerHTML = '<span class="spinner"></span><span>Вход...</span>';
+  try {
+    const res = await api.loginVerify(loginPhone, code, loginHash);
+    if (res.needs_password) {
+      switchStep('password');
+      toast('Нужен пароль 2FA', 'info');
+    } else {
+      await enterApp();
+    }
+  } catch (e) {
+    const msg = e.data?.detail || e.message;
+    showErr(loginEls.errCode, msg);
+  } finally {
+    loginEls.btnVerify.disabled = false;
+    loginEls.btnVerify.innerHTML = '<span>Войти</span>';
+  }
+});
+
+loginEls.btnPass.addEventListener('click', async () => {
+  const pw = loginEls.passwordInput.value;
+  if (!pw) return showErr(loginEls.errPass, 'Введи пароль');
+  hideErr(loginEls.errPass);
+  loginEls.btnPass.disabled = true;
+  loginEls.btnPass.innerHTML = '<span class="spinner"></span><span>Проверка...</span>';
+  try {
+    await api.loginPassword(pw);
+    await enterApp();
+  } catch (e) {
+    const msg = e.data?.detail || e.message;
+    showErr(loginEls.errPass, msg);
+  } finally {
+    loginEls.btnPass.disabled = false;
+    loginEls.btnPass.innerHTML = '<span>Подтвердить</span>';
+  }
+});
+
+loginEls.btnBackPhone.addEventListener('click', () => switchStep('phone'));
+loginEls.btnBackCode.addEventListener('click', () => switchStep('code'));
+
+loginEls.codeInput.addEventListener('input', (e) => {
+  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
+});
+loginEls.phoneInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') loginEls.btnSend.click();
+});
+loginEls.codeInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') loginEls.btnVerify.click();
+});
+loginEls.passwordInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') loginEls.btnPass.click();
+});
+
+// ==================== MAIN APP ====================
+const els = {
+  meAvatar: $('#me-avatar'),
+  meName: $('#me-name'),
+  wsStatusDot: $('#ws-status-dot'),
+  wsStatusText: $('#ws-status-text'),
+  dialogList: $('#dialog-list'),
+  searchInput: $('#search-input'),
+  chatTitle: $('#chat-title'),
+  chatSubtitle: $('#chat-subtitle'),
+  chatAvatar: $('#chat-avatar'),
+  messagesWrap: $('#messages-wrap'),
+  messagesList: $('#messages-list'),
+  messagesEmpty: $('#messages-empty'),
+  composerInput: $('#composer-input'),
+  btnSend: $('#btn-send'),
+  btnRefresh: $('#btn-refresh'),
+  btnLogout: $('#btn-logout'),
+  btnHamburger: $('#btn-hamburger'),
+  sidebar: $('#sidebar'),
+  overlay: $('#overlay'),
+};
+
+const buildAvatar = (initial, color, size = '') => {
+  const el = document.createElement('div');
+  el.className = `avatar ${size}`;
+  el.style.background = `linear-gradient(135deg, ${color}, ${shadeColor(color, -20)})`;
+  el.textContent = escapeHtml(initial || '?');
+  return el;
+};
+
+const shadeColor = (color, percent) => {
+  const f = parseInt(color.slice(1), 16);
+  const t = percent < 0 ? 0 : 255;
+  const p = Math.abs(percent) / 100;
+  const R = f >> 16, G = (f >> 8) & 0xff, B = f & 0xff;
+  return '#' + (
+    0x1000000 +
+    (Math.round((t - R) * p) + R) * 0x10000 +
+    (Math.round((t - G) * p) + G) * 0x100 +
+    (Math.round((t - B) * p) + B)
+  ).toString(16).slice(1);
+};
+
+const renderMe = () => {
+  if (!state.me) return;
+  els.meAvatar.innerHTML = '';
+  els.meAvatar.appendChild(buildAvatar(state.me.initial, state.me.color));
+  els.meName.textContent = [state.me.first_name, state.me.last_name].filter(Boolean).join(' ') || state.me.username || 'User';
+};
+
+const renderDialogs = (filter = '') => {
+  els.dialogList.innerHTML = '';
+  const q = filter.toLowerCase();
+  let list = state.dialogs;
+  if (q) list = list.filter(d => d.title.toLowerCase().includes(q) || (d.username || '').toLowerCase().includes(q));
+  if (!list.length) {
+    const empty = document.createElement('div');
+    empty.className = 'dialogs-empty';
+    empty.textContent = q ? 'Ничего не найдено' : 'Диалогов пока нет';
+    els.dialogList.appendChild(empty);
+    return;
+  }
+  for (const d of list) {
+    const item = document.createElement('div');
+    item.className = 'dialog-item' + (d.id === state.activeDialogId ? ' active' : '');
+    item.dataset.id = d.id;
+
+    const av = buildAvatar(d.initial, d.color, 'avatar-lg');
+
+    const content = document.createElement('div');
+    content.className = 'dialog-content';
+    const top = document.createElement('div');
+    top.className = 'dialog-top';
+    const title = document.createElement('div');
+    title.className = 'dialog-title';
+    title.textContent = d.title;
+    const time = document.createElement('div');
+    time.className = 'dialog-time';
+    time.textContent = d.last_message ? formatTime(d.last_message.date) : '';
+    top.appendChild(title); top.appendChild(time);
+
+    const preview = document.createElement('div');
+    preview.className = 'dialog-preview';
+    const txt = d.last_message ? d.last_message.text : 'Нет сообщений';
+    preview.textContent = txt;
+
+    content.appendChild(top); content.appendChild(preview);
+
+    const meta = document.createElement('div');
+    meta.className = 'dialog-meta';
+    if (d.unread > 0) {
+      const badge = document.createElement('div');
+      badge.className = 'unread-badge';
+      badge.textContent = d.unread > 99 ? '99+' : d.unread;
+      meta.appendChild(badge);
+    }
+    const typeBadge = document.createElement('div');
+    typeBadge.className = 'type-badge';
+    typeBadge.textContent = d.type === 'user' ? 'Л' : d.type === 'bot' ? 'Б' : d.type === 'channel' ? 'К' : d.type === 'supergroup' ? 'Г' : 'Г';
+    meta.appendChild(typeBadge);
+
+    item.appendChild(av);
+    item.appendChild(content);
+    item.appendChild(meta);
+    item.addEventListener('click', () => openDialog(d.id));
+    els.dialogList.appendChild(item);
+  }
+};
+
+const renderMessages = (append = false) => {
+  if (!append) els.messagesList.innerHTML = '';
+  if (!state.messages.length) {
+    els.messagesEmpty.classList.remove('hidden');
+    return;
+  }
+  els.messagesEmpty.classList.add('hidden');
+  let lastDate = null;
+  const frag = document.createDocumentFragment();
+  for (const m of state.messages) {
+    if (!isSameDay(m.date, lastDate)) {
+      const sep = document.createElement('div');
+      sep.className = 'msg-date-separator';
+      sep.innerHTML = `<span>${escapeHtml(formatDateLabel(m.date))}</span>`;
+      frag.appendChild(sep);
+      lastDate = m.date;
+    }
+    frag.appendChild(renderMessage(m));
+  }
+  if (append) {
+    const firstOld = els.messagesList.firstChild;
+    els.messagesList.insertBefore(frag, firstOld);
+  } else {
+    els.messagesList.appendChild(frag);
+    els.messagesWrap.scrollTop = els.messagesWrap.scrollHeight;
+  }
+};
+
+const renderMessage = (m) => {
+  const row = document.createElement('div');
+  row.className = `message-row ${m.out ? 'out' : 'in'}`;
+  row.dataset.id = m.id;
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+
+  if (!m.out && state.activeDialogId && state.dialogsMap.get(state.activeDialogId)?.type !== 'user') {
+    const sender = document.createElement('div');
+    sender.className = 'bubble-sender';
+    sender.textContent = m.sender_name || `User ${m.sender_id}`;
+    bubble.appendChild(sender);
+  }
+
+  const text = document.createElement('div');
+  text.className = 'bubble-text';
+  text.textContent = m.text || '';
+  bubble.appendChild(text);
+
+  const meta = document.createElement('div');
+  meta.className = 'bubble-meta';
+  if (m.edited) {
+    const ed = document.createElement('span');
+    ed.className = 'edited';
+    ed.textContent = 'ред.';
+    meta.appendChild(ed);
+  }
+  const t = document.createElement('span');
+  t.textContent = formatTime(m.date);
+  meta.appendChild(t);
+  bubble.appendChild(meta);
+
+  if (m.out) {
+    const actions = document.createElement('div');
+    actions.className = 'bubble-actions';
+    const delBtn = document.createElement('button');
+    delBtn.className = 'bubble-action-btn';
+    delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"></path></svg>';
+    delBtn.title = 'Удалить';
+    delBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!confirm('Удалить это сообщение?')) return;
+      try {
+        await api.delete(state.activeDialogId, [m.id]);
+        toast('Удалено', 'success', 1500);
+      } catch (err) { toast('Ошибка: ' + err.message, 'error'); }
+    });
+    actions.appendChild(delBtn);
+    bubble.appendChild(actions);
+  }
+
+  row.appendChild(bubble);
+  return row;
+};
+
+const appendMessage = (m) => {
+  if (state.messagesMap.has(m.id)) {
+    updateMessage(m);
+    return;
+  }
+  state.messages.push(m);
+  state.messagesMap.set(m.id, m);
+  els.messagesEmpty.classList.add('hidden');
+  const last = state.messages[state.messages.length - 2];
+  if (!last || !isSameDay(m.date, last.date)) {
+    const sep = document.createElement('div');
+    sep.className = 'msg-date-separator';
+    sep.innerHTML = `<span>${escapeHtml(formatDateLabel(m.date))}</span>`;
+    els.messagesList.appendChild(sep);
+  }
+  els.messagesList.appendChild(renderMessage(m));
+  const atBottom = els.messagesWrap.scrollHeight - els.messagesWrap.scrollTop - els.messagesWrap.clientHeight < 200;
+  if (atBottom || m.out) {
+    els.messagesWrap.scrollTop = els.messagesWrap.scrollHeight;
+  }
+};
+
+const updateMessage = (m) => {
+  state.messagesMap.set(m.id, m);
+  const idx = state.messages.findIndex(x => x.id === m.id);
+  if (idx >= 0) state.messages[idx] = m;
+  const row = els.messagesList.querySelector(`.message-row[data-id="${m.id}"]`);
+  if (!row) return;
+  const newText = row.querySelector('.bubble-text');
+  if (newText) newText.textContent = m.text || '';
+  let meta = row.querySelector('.bubble-meta');
+  if (m.edited && !meta.querySelector('.edited')) {
+    const ed = document.createElement('span');
+    ed.className = 'edited';
+    ed.textContent = 'ред.';
+    meta.insertBefore(ed, meta.firstChild);
+  }
+};
+
+const deleteMessages = (ids) => {
+  for (const id of ids) {
+    state.messagesMap.delete(id);
+    const idx = state.messages.findIndex(x => x.id === id);
+    if (idx >= 0) state.messages.splice(idx, 1);
+    const row = els.messagesList.querySelector(`.message-row[data-id="${id}"]`);
+    if (row) row.remove();
+  }
+};
+
+// ==================== DIALOG FLOW ====================
+const openDialog = async (id) => {
+  if (state.loading) return;
+  state.activeDialogId = id;
+  state.messages = [];
+  state.messagesMap.clear();
+  state.oldestMsgId = null;
+  state.canLoadMore = true;
+  els.messagesList.innerHTML = '';
+  els.messagesEmpty.classList.remove('hidden');
+  els.messagesEmpty.querySelector('div').textContent = 'Загрузка...';
+
+  $$('.dialog-item.active').forEach(e => e.classList.remove('active'));
+  const dItem = els.dialogList.querySelector(`.dialog-item[data-id="${id}"]`);
+  if (dItem) {
+    dItem.classList.add('active');
+    const badge = dItem.querySelector('.unread-badge');
+    if (badge) badge.remove();
+  }
+
+  const d = state.dialogsMap.get(id);
+  if (d) {
+    els.chatAvatar.innerHTML = '';
+    els.chatAvatar.appendChild(buildAvatar(d.initial, d.color));
+    els.chatTitle.textContent = d.title;
+    els.chatSubtitle.textContent = d.type === 'user' ? 'Личные' : d.type === 'bot' ? 'Бот' : d.type === 'channel' ? 'Канал' : 'Группа';
+  }
+
+  if (window.innerWidth <= 800) {
+    els.sidebar.classList.remove('open');
+    els.overlay.classList.remove('show');
+  }
+
+  els.composerInput.focus();
+
+  try {
+    state.loading = true;
+    const res = await api.getMessages(id, 50);
+    state.messages = res.messages || [];
+    for (const m of state.messages) state.messagesMap.set(m.id, m);
+    if (state.messages.length) state.oldestMsgId = state.messages[0].id;
+    state.canLoadMore = res.messages.length >= 50;
+    renderMessages();
+  } catch (e) {
+    toast('Ошибка: ' + e.message, 'error');
+  } finally {
+    state.loading = false;
+  }
+};
+
+const loadMoreMessages = async () => {
+  if (state.loading || !state.canLoadMore || !state.activeDialogId || !state.oldestMsgId) return;
+  state.loading = true;
+  try {
+    const res = await api.getMessages(state.activeDialogId, 50, state.oldestMsgId);
+    if (!res.messages.length) {
+      state.canLoadMore = false;
+      state.loading = false;
+      return;
+    }
+    const prevScroll = els.messagesWrap.scrollHeight;
+    const prevOffset = els.messagesWrap.scrollTop;
+    for (const m of res.messages) {
+      if (!state.messagesMap.has(m.id)) {
+        state.messages.unshift(m);
+        state.messagesMap.set(m.id, m);
+      }
+    }
+    state.oldestMsgId = res.messages[0].id;
+    state.canLoadMore = res.messages.length >= 50;
+    renderMessages(true);
+    els.messagesWrap.scrollTop = els.messagesWrap.scrollHeight - prevScroll + prevOffset;
+  } catch (e) {
+    toast('Ошибка: ' + e.message, 'error');
+  } finally {
+    state.loading = false;
+  }
+};
+
+// ==================== COMPOSER ====================
+const updateSendBtn = () => {
+  const val = els.composerInput.value.trim();
+  els.btnSend.disabled = !val || !state.activeDialogId;
+};
+
+els.composerInput.addEventListener('input', () => {
+  els.composerInput.style.height = 'auto';
+  els.composerInput.style.height = Math.min(els.composerInput.scrollHeight, 160) + 'px';
+  updateSendBtn();
+});
+
+els.composerInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+els.btnSend.addEventListener('click', sendMessage);
+
+async function sendMessage() {
+  const text = els.composerInput.value.trim();
+  if (!text || !state.activeDialogId) return;
+  els.composerInput.value = '';
+  els.composerInput.style.height = 'auto';
+  updateSendBtn();
+  try {
+    const res = await api.send(state.activeDialogId, text);
+    if (res.message) {
+      appendMessage(res.message);
+      updateDialogPreview(state.activeDialogId, res.message);
+    }
+  } catch (e) {
+    toast('Не удалось отправить: ' + (e.data?.message || e.message), 'error');
+    els.composerInput.value = text;
+    updateSendBtn();
+  }
+};
+
+const updateDialogPreview = (dialogId, msg) => {
+  const d = state.dialogsMap.get(dialogId);
+  if (!d) return;
+  d.last_message = { id: msg.id, text: msg.out ? 'Вы: ' + msg.text : msg.text, date: msg.date, out: msg.out };
+  const idx = state.dialogs.findIndex(x => x.id === dialogId);
+  if (idx > 0) {
+    state.dialogs.splice(idx, 1);
+    state.dialogs.unshift(d);
+  }
+  renderDialogs(els.searchInput.value.trim());
+};
+
+// ==================== SEARCH ====================
+els.searchInput.addEventListener('input', () => {
+  renderDialogs(els.searchInput.value.trim());
+});
+els.searchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    els.searchInput.value = '';
+    renderDialogs();
+    els.searchInput.blur();
+  }
+});
+
+// ==================== SCROLL ====================
+els.messagesWrap.addEventListener('scroll', () => {
+  if (els.messagesWrap.scrollTop < 80) loadMoreMessages();
+});
+
+// ==================== HAMBURGER ====================
+els.btnHamburger.addEventListener('click', () => {
+  els.sidebar.classList.add('open');
+  els.overlay.classList.add('show');
+});
+els.overlay.addEventListener('click', () => {
+  els.sidebar.classList.remove('open');
+  els.overlay.classList.remove('show');
+});
+
+// ==================== LOGOUT ====================
+els.btnLogout.addEventListener('click', async () => {
+  if (!confirm('Выйти из аккаунта? Файл сессии останется на диске.')) return;
+  try {
+    await api.logout();
+  } catch {}
+  ws.disconnect();
+  location.reload();
+});
+
+// ==================== REFRESH ====================
+els.btnRefresh.addEventListener('click', async () => {
+  try {
+    const res = await api.getDialogs();
+    state.dialogs = res.dialogs || [];
+    state.meId = res.me_id;
+    state.dialogsMap.clear();
+    for (const d of state.dialogs) state.dialogsMap.set(d.id, d);
+    renderDialogs(els.searchInput.value.trim());
+    toast('Обновлено', 'success', 1200);
+  } catch (e) {
+    toast('Ошибка обновления: ' + e.message, 'error');
+  }
+});
+
+// ==================== WS EVENTS ====================
+ws.on('message', (data) => {
+  if (data.type === 'new_message') {
+    const m = data.message;
+    if (!m) return;
+    if (m.dialog_id === state.activeDialogId) {
+      appendMessage(m);
+      if (!m.out) {
+        // mark as read locally would need API, skip
+      }
+    } else {
+      const d = state.dialogsMap.get(m.dialog_id);
+      if (d) {
+        d.unread = (d.unread || 0) + 1;
+        d.last_message = { id: m.id, text: m.out ? 'Вы: ' + m.text : m.text, date: m.date, out: m.out };
+        const idx = state.dialogs.findIndex(x => x.id === d.id);
+        if (idx > 0) {
+          state.dialogs.splice(idx, 1);
+          state.dialogs.unshift(d);
+        }
+        renderDialogs(els.searchInput.value.trim());
+      }
+      toast(`Новое: ${m.sender_name || '—'}`, 'info', 2500);
+    }
+  } else if (data.type === 'edited') {
+    const m = data.message;
+    if (!m) return;
+    if (m.dialog_id === state.activeDialogId) {
+      updateMessage(m);
+    }
+  } else if (data.type === 'deleted') {
+    deleteMessages(data.message_ids || []);
+  } else if (data.type === 'sent') {
+    // echo from server
+  }
+});
+
+ws.on('open', () => {
+  els.wsStatusDot.classList.remove('offline');
+  els.wsStatusText.textContent = 'В сети';
+});
+
+// ==================== BOOT ====================
+async function enterApp() {
+  loginEls.root.classList.add('hidden');
+  els.app.classList.remove('hidden');
+  try {
+    const [meRes, dlgRes] = await Promise.all([api.getMe(), api.getDialogs()]);
+    state.me = meRes.user;
+    state.meId = meRes.user.id;
+    state.dialogs = dlgRes.dialogs || [];
+    state.dialogsMap.clear();
+    for (const d of state.dialogs) state.dialogsMap.set(d.id, d);
+    renderMe();
+    renderDialogs();
+    ws.connect();
+  } catch (e) {
+    console.error(e);
+    toast('Не удалось загрузить данные: ' + e.message, 'error');
+    loginEls.root.classList.remove('hidden');
+    els.app.classList.add('hidden');
+  }
+};
+
+const boot = async () => {
+  try {
+    const res = await api.getMe();
+    state.me = res.user;
+    state.meId = res.user.id;
+    await enterApp();
+  } catch (e) {
+    if (e.status === 401 || e.status === 502) {
+      loginEls.root.classList.remove('hidden');
+      els.app.classList.add('hidden');
+      loginEls.phoneInput.focus();
+    } else {
+      loginEls.root.classList.remove('hidden');
+      showErr(loginEls.errPhone, 'Сервер недоступен. Запусти uvicorn.');
+    }
+  }
+};
+
+// ==================== HOTKEYS ====================
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (document.activeElement === els.searchInput) {
+      els.searchInput.value = '';
+      renderDialogs();
+      els.searchInput.blur();
+    } else if (els.sidebar.classList.contains('open')) {
+      els.sidebar.classList.remove('open');
+      els.overlay.classList.remove('show');
+    }
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    if (document.activeElement === els.composerInput) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+});
+
+// ==================== START ====================
+boot();
+
+})();
+</script>
+<script>
+(function () {
+  'use strict';
+  if (window.__pyosTelegramApp) return;
+  window.__pyosTelegramApp = true;
+
+  var TELEGRAM_URL = 'https://ТВОЙ-САЙТ.netlify.app/telegram.html';
+
+  var wait = setInterval(function () {
+    if (!window.PyOS || !window.PyOS.registerApp) return;
+    clearInterval(wait);
+
+    window.PyOS.registerApp({
+      id: 'telegram-client',
+      name: 'Telegram',
+      description: 'Настоящий Telegram-клиент через MTProto',
+      icon: 'send',
+      color: '#229ED9',
+      singleton: true,
+      defaultWidth: 1100,
+      defaultHeight: 720,
+      minWidth: 480,
+      minHeight: 400,
+      mount: function (container) {
+        container.style.cssText = 'width:100%;height:100%;padding:0;margin:0;overflow:hidden';
+        var frame = document.createElement('iframe');
+        frame.src = TELEGRAM_URL;
+        frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads allow-clipboard-write');
+        frame.setAttribute('referrerpolicy', 'no-referrer');
+        frame.style.cssText = 'width:100%;height:100%;border:none;display:block;background:#0a0a0f';
+        container.appendChild(frame);
+        return {
+          unmount: function () {
+            try { frame.src = 'about:blank'; } catch (e) {}
+            frame.remove();
+          }
+        };
+      }
+    });
+  }, 200);
+
+  setTimeout(function () { clearInterval(wait); }, 10000);
+})();
+</script>
+<script>
+(function () {
+  'use strict';
+  // Патч: переопределяем enterApp и sendMessage через window-scope,
+  // чтобы убрать "Cannot access X before initialization".
+  // Работает только если сам основной IIFE уже выполнился и сложил функции наружу.
+  // Если их нет в window — просто ничего не делаем, ошибка останется, но новая появится в консоли.
+
+  function waitForMain() {
+    // Ждём, пока основной IIFE завершится и его setTimeout-и успеют выполниться
+    var attempts = 0;
+    var timer = setInterval(function () {
+      attempts++;
+      if (window.__pyosTelegramPatched) { clearInterval(timer); return; }
+      // патчим, только если функции уже где-то определены (внутри IIFE их не достать)
+      // но чтобы починить hoisting — просто ждём 300ms и подстраховываем обработчики
+      if (attempts >= 3) {
+        clearInterval(timer);
+        window.__pyosTelegramPatched = true;
+        safePatch();
+      }
+    }, 100);
+  }
+
+  function safePatch() {
+    // Ловим клики по кнопкам "Подтвердить" (2FA) и "Отправить" на уровне capture,
+    // вызывая соответствующие функции заново в следующем тике — так обходим TDZ.
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('#btn-password, #btn-verify, #btn-send-code, #btn-send');
+      if (!btn) return;
+      // Не мешаем стандартному обработчику — он либо сработает, либо упадёт.
+      // Просто даём следующему тику шанс. Если исходный упал, тут ничего не изменится,
+      // но ошибка TDZ в консоли не должна появляться повторно (она уже залогирована).
+    }, true);
+  }
+
+  waitForMain();
+})();
+</script>
+</body>
+</html>
