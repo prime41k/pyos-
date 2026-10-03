@@ -1462,5 +1462,960 @@ html[data-theme="light"] .tok-tag { color: #be185d; }
 
 })();
 </script>
+  <!-- ═══════════════════════════════════════════════════════════════════
+     JARVIS · Голосовой ассистент на Gemini 3.6 Flash
+     Вставь перед </body> в dashboard.html
+     ═══════════════════════════════════════════════════════════════════ -->
+<style>
+  #jarvis-fab {
+    position: fixed; right: 20px; bottom: 20px; z-index: 9998;
+    width: 60px; height: 60px; border-radius: 50%;
+    background: linear-gradient(140deg, #7c6cff, #22d3ee);
+    box-shadow: 0 8px 32px rgba(124,108,255,.5);
+    display: flex; align-items: center; justify-content: center;
+    cursor: grab; user-select: none;
+    transition: transform .25s cubic-bezier(.2,.8,.25,1), box-shadow .25s;
+    color: #fff;
+  }
+  #jarvis-fab:hover { transform: scale(1.08); box-shadow: 0 12px 40px rgba(124,108,255,.7); }
+  #jarvis-fab:active { transform: scale(.95); cursor: grabbing; }
+  #jarvis-fab.listening { animation: jarvisPulse 1.2s infinite; }
+  #jarvis-fab.listening::after {
+    content:''; position:absolute; inset:-8px; border-radius:50%;
+    border:2px solid rgba(124,108,255,.6);
+    animation: jarvisRing 1.4s infinite;
+  }
+  @keyframes jarvisPulse {
+    0%,100% { box-shadow: 0 8px 32px rgba(124,108,255,.5); }
+    50%     { box-shadow: 0 8px 46px rgba(34,211,238,.9); }
+  }
+  @keyframes jarvisRing {
+    0%   { transform: scale(1);   opacity: .8; }
+    100% { transform: scale(1.5); opacity: 0; }
+  }
+  #jarvis-fab svg { width: 26px; height: 26px; pointer-events: none; }
+
+  #jarvis-panel {
+    position: fixed; right: 20px; bottom: 92px; z-index: 9999;
+    width: 380px; max-width: calc(100vw - 40px);
+    max-height: 560px; display: flex; flex-direction: column;
+    background: var(--pyos-surface-solid, #11141c);
+    border: 1px solid var(--pyos-border, rgba(255,255,255,.09));
+    border-radius: 18px; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,.6);
+    transform: translateY(20px) scale(.96); opacity: 0; pointer-events: none;
+    transition: transform .3s cubic-bezier(.2,.8,.25,1), opacity .3s;
+    color: var(--pyos-text, #e9ecf5);
+    font-family: inherit;
+  }
+  #jarvis-panel.open { transform: none; opacity: 1; pointer-events: auto; }
+
+  #jarvis-header {
+    display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+    border-bottom: 1px solid var(--pyos-border, rgba(255,255,255,.09));
+    background: linear-gradient(135deg, rgba(124,108,255,.2), rgba(34,211,238,.12));
+  }
+  #jarvis-header .jarvis-av {
+    width: 36px; height: 36px; border-radius: 12px;
+    background: linear-gradient(140deg,#7c6cff,#22d3ee);
+    display: flex; align-items: center; justify-content: center; color: #fff;
+  }
+  #jarvis-header .jarvis-title { flex: 1; min-width: 0; }
+  #jarvis-header .jarvis-title b { font-size: 14px; display: block; }
+  #jarvis-header .jarvis-title small { font-size: 11px; opacity: .65; }
+  #jarvis-close {
+    width: 28px; height: 28px; border-radius: 9px; border: none;
+    background: rgba(255,255,255,.1); color: inherit; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #jarvis-close:hover { background: rgba(255,255,255,.22); }
+
+  #jarvis-log {
+    flex: 1; overflow-y: auto; padding: 12px;
+    display: flex; flex-direction: column; gap: 8px;
+    font-size: 13px; line-height: 1.5; min-height: 180px;
+  }
+  #jarvis-log::-webkit-scrollbar { width: 6px; }
+  #jarvis-log::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,.15); border-radius: 3px;
+  }
+  .jarvis-msg {
+    padding: 8px 12px; border-radius: 12px; max-width: 88%;
+    word-break: break-word; animation: jarvisMsgIn .25s ease;
+  }
+  @keyframes jarvisMsgIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+  }
+  .jarvis-msg.user {
+    align-self: flex-end; background: rgba(124,108,255,.28);
+    border: 1px solid rgba(124,108,255,.4); border-bottom-right-radius: 4px;
+  }
+  .jarvis-msg.bot {
+    align-self: flex-start; background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.08); border-bottom-left-radius: 4px;
+  }
+  .jarvis-msg.sys {
+    align-self: center; background: transparent; color: rgba(255,255,255,.5);
+    font-size: 11.5px; font-style: italic; text-align: center; padding: 2px 8px;
+  }
+  .jarvis-msg.tool {
+    align-self: flex-start; background: rgba(34,211,238,.12);
+    border: 1px solid rgba(34,211,238,.3); color: #a5f3fc;
+    font-family: 'JetBrains Mono', monospace; font-size: 11.5px; padding: 6px 10px;
+  }
+  .jarvis-msg.err {
+    align-self: flex-start; background: rgba(248,113,113,.15);
+    border: 1px solid rgba(248,113,113,.35); color: #fecaca;
+  }
+  .jarvis-typing {
+    display: inline-flex; gap: 4px; align-items: center;
+  }
+  .jarvis-typing i {
+    width: 6px; height: 6px; border-radius: 50%; background: #7c6cff;
+    animation: jarvisTyping 1.2s infinite ease-in-out;
+  }
+  .jarvis-typing i:nth-child(2) { animation-delay: .18s; }
+  .jarvis-typing i:nth-child(3) { animation-delay: .36s; }
+  @keyframes jarvisTyping {
+    0%,80%,100% { opacity: .3; transform: scale(.8); }
+    40%         { opacity: 1;  transform: scale(1.15); }
+  }
+
+  #jarvis-controls {
+    display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+    border-top: 1px solid var(--pyos-border, rgba(255,255,255,.09));
+    background: rgba(0,0,0,.18);
+  }
+  #jarvis-input {
+    flex: 1; height: 38px; padding: 0 14px; border-radius: 12px;
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1);
+    color: inherit; outline: none; font-size: 13px;
+  }
+  #jarvis-input:focus { border-color: rgba(124,108,255,.5); }
+  #jarvis-mic, #jarvis-send {
+    width: 38px; height: 38px; border-radius: 12px; border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #fff; flex: 0 0 auto;
+    transition: transform .15s, background .15s;
+  }
+  #jarvis-mic { background: linear-gradient(140deg,#7c6cff,#22d3ee); }
+  #jarvis-mic.listening { background: #ef4444; animation: jarvisPulse 1s infinite; }
+  #jarvis-send { background: rgba(124,108,255,.5); }
+  #jarvis-mic:hover, #jarvis-send:hover { transform: scale(1.06); }
+  #jarvis-mic svg, #jarvis-send svg { width: 18px; height: 18px; pointer-events: none; }
+
+  #jarvis-footer {
+    padding: 6px 12px 8px; font-size: 10.5px; opacity: .55;
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(0,0,0,.18);
+  }
+  #jarvis-footer button {
+    background: none; border: none; color: inherit; cursor: pointer;
+    font-size: 10.5px; opacity: .8; padding: 2px 6px; border-radius: 6px;
+  }
+  #jarvis-footer button:hover { background: rgba(255,255,255,.1); opacity: 1; }
+
+  @media (max-width: 480px) {
+    #jarvis-panel { right: 10px; left: 10px; width: auto; bottom: 86px; }
+    #jarvis-fab { right: 12px; bottom: 12px; width: 54px; height: 54px; }
+  }
+</style>
+
+<div id="jarvis-fab" title="JARVIS — голосовой ассистент">
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/>
+  </svg>
+</div>
+
+<div id="jarvis-panel" role="dialog" aria-label="JARVIS ассистент">
+  <div id="jarvis-header">
+    <div class="jarvis-av">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-4 0V4a2 2 0 0 1 2-2zM6 8a2 2 0 0 1 2 2v4a2 2 0 1 1-4 0v-4a2 2 0 0 1 2-2zm12 0a2 2 0 0 1 2 2v4a2 2 0 1 1-4 0v-4a2 2 0 0 1 2-2zm-6 8a4 4 0 0 0 4-4h2a6 6 0 0 1-5 5.91V21h-2v-3.09A6 6 0 0 1 6 12h2a4 4 0 0 0 4 4z"/>
+      </svg>
+    </div>
+    <div class="jarvis-title">
+      <b>JARVIS</b>
+      <small id="jarvis-status">Gemini 3.6 Flash · готов</small>
+    </div>
+    <button id="jarvis-close" title="Закрыть">✕</button>
+  </div>
+
+  <div id="jarvis-log"></div>
+
+  <div id="jarvis-controls">
+    <button id="jarvis-mic" title="Голосовой ввод">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/>
+      </svg>
+    </button>
+    <input id="jarvis-input" type="text" placeholder="Спроси или скажи команду…" autocomplete="off">
+    <button id="jarvis-send" title="Отправить">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
+      </svg>
+    </button>
+  </div>
+
+  <div id="jarvis-footer">
+    <span id="jarvis-hint">Enter — отправить · 🎤 — голос</span>
+    <button id="jarvis-clear">Очистить</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  if (window.__jarvisInstalled) return;
+  window.__jarvisInstalled = true;
+
+  /* ═══════════════════════════════════════════════════════════════
+     КОНФИГУРАЦИЯ
+     ═══════════════════════════════════════════════════════════════ */
+  const MODEL = 'gemini-3.6-flash';
+  const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
+  const LS_KEY = 'pfx.dashboard.geminiKey';
+  const LS_HISTORY = 'pfx.jarvis.history';
+  const MAX_HISTORY = 24;
+
+  const SYSTEM_PROMPT = `Ты — JARVIS, голосовой ассистент операционной среды PyOS Studio.
+Отвечай кратко, дружелюбно, на русском языке.
+Ты можешь выполнять команды в системе через функции (tools).
+Всегда, когда пользователь просит что-то сделать с системой (открыть приложение, сменить тему, разложить окна и т.д.) — вызывай соответствующую функцию.
+После выполнения функции кратко подтверди действие голосом (1 короткая фраза).
+Не выдумывай несуществующие функции — используй только те, что тебе даны.
+Если пользователь просто общается — отвечай без вызова функций.`;
+
+  /* ═══════════════════════════════════════════════════════════════
+     ИНСТРУМЕНТЫ (function calling)
+     ═══════════════════════════════════════════════════════════════ */
+  const TOOLS = [{
+    function_declarations: [
+      {
+        name: 'open_app',
+        description: 'Открыть приложение PyOS по его ID',
+        parameters: {
+          type: 'object',
+          properties: {
+            appId: {
+              type: 'string',
+              description: 'ID приложения: editor, files, terminal, gemini, python, preview, settings, plugin-store, youtube, telegram-client'
+            }
+          },
+          required: ['appId']
+        }
+      },
+      {
+        name: 'close_app',
+        description: 'Закрыть окно приложения по ID',
+        parameters: {
+          type: 'object',
+          properties: { appId: { type: 'string' } },
+          required: ['appId']
+        }
+      },
+      {
+        name: 'list_windows',
+        description: 'Получить список открытых окон',
+        parameters: { type: 'object', properties: {} }
+      },
+      {
+        name: 'minimize_all',
+        description: 'Свернуть все окна',
+        parameters: { type: 'object', properties: {} }
+      },
+      {
+        name: 'close_all',
+        description: 'Закрыть все окна',
+        parameters: { type: 'object', properties: {} }
+      },
+      {
+        name: 'set_theme',
+        description: 'Сменить тему оформления',
+        parameters: {
+          type: 'object',
+          properties: { theme: { type: 'string', enum: ['dark', 'light'] } },
+          required: ['theme']
+        }
+      },
+      {
+        name: 'toggle_theme',
+        description: 'Переключить тему между тёмной и светлой',
+        parameters: { type: 'object', properties: {} }
+      },
+      {
+        name: 'set_accent',
+        description: 'Сменить акцентный цвет',
+        parameters: {
+          type: 'object',
+          properties: { color: { type: 'string', description: 'HEX-цвет, например #7c6cff' } },
+          required: ['color']
+        }
+      },
+      {
+        name: 'set_tiling',
+        description: 'Сменить схему тайлинга окон',
+        parameters: {
+          type: 'object',
+          properties: { layout: { type: 'string', enum: ['master', 'grid', 'columns', 'rows', 'stack'] } },
+          required: ['layout']
+        }
+      },
+      {
+        name: 'tile_all',
+        description: 'Разложить все окна по сетке',
+        parameters: { type: 'object', properties: {} }
+      },
+      {
+        name: 'set_workspace',
+        description: 'Переключить рабочий стол',
+        parameters: {
+          type: 'object',
+          properties: { number: { type: 'integer', minimum: 1, maximum: 9 } },
+          required: ['number']
+        }
+      },
+      {
+        name: 'notify',
+        description: 'Показать уведомление пользователю',
+        parameters: {
+          type: 'object',
+          properties: {
+            title: { type: 'string' },
+            message: { type: 'string' },
+            type: { type: 'string', enum: ['info', 'success', 'warning', 'error'] }
+          },
+          required: ['title']
+        }
+      },
+      {
+        name: 'lock_screen',
+        description: 'Заблокировать экран PyOS',
+        parameters: { type: 'object', properties: {} }
+      },
+      {
+        name: 'search_files',
+        description: 'Найти файлы в проекте по части имени',
+        parameters: {
+          type: 'object',
+          properties: { query: { type: 'string' } },
+          required: ['query']
+        }
+      },
+      {
+        name: 'open_file',
+        description: 'Открыть файл проекта в редакторе',
+        parameters: {
+          type: 'object',
+          properties: { path: { type: 'string' } },
+          required: ['path']
+        }
+      },
+      {
+        name: 'get_time',
+        description: 'Получить текущее время и дату',
+        parameters: { type: 'object', properties: {} }
+      }
+    ]
+  }];
+
+  /* ═══════════════════════════════════════════════════════════════
+     DOM
+     ═══════════════════════════════════════════════════════════════ */
+  const fab = document.getElementById('jarvis-fab');
+  const panel = document.getElementById('jarvis-panel');
+  const log = document.getElementById('jarvis-log');
+  const input = document.getElementById('jarvis-input');
+  const micBtn = document.getElementById('jarvis-mic');
+  const sendBtn = document.getElementById('jarvis-send');
+  const closeBtn = document.getElementById('jarvis-close');
+  const clearBtn = document.getElementById('jarvis-clear');
+  const statusEl = document.getElementById('jarvis-status');
+
+  /* ═══════════════════════════════════════════════════════════════
+     СОСТОЯНИЕ
+     ═══════════════════════════════════════════════════════════════ */
+  let history = [];
+  let listening = false;
+  let recognition = null;
+  let speaking = false;
+  let busy = false;
+
+  try {
+    const saved = localStorage.getItem(LS_HISTORY);
+    if (saved) history = JSON.parse(saved) || [];
+  } catch (e) { history = []; }
+
+  /* ═══════════════════════════════════════════════════════════════
+     UI ХЕЛПЕРЫ
+     ═══════════════════════════════════════════════════════════════ */
+  function addMsg(text, kind) {
+    const div = document.createElement('div');
+    div.className = 'jarvis-msg ' + (kind || 'bot');
+    div.textContent = text;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+    return div;
+  }
+
+  function addTyping() {
+    const div = document.createElement('div');
+    div.className = 'jarvis-msg bot';
+    div.innerHTML = '<span class="jarvis-typing"><i></i><i></i><i></i></span>';
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+    return div;
+  }
+
+  function setStatus(txt) {
+    if (statusEl) statusEl.textContent = txt;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     KEY MANAGEMENT
+     ═══════════════════════════════════════════════════════════════ */
+  function getApiKey() {
+    // 1) Из настроек dashboard
+    try {
+      if (window.Client && Client.request) {
+        // Синхронно не получим, поэтому смотрим localStorage
+      }
+    } catch (e) {}
+    // 2) Из localStorage dashboard
+    try {
+      const s = localStorage.getItem('pfx.dashboard.state');
+      if (s) {
+        const st = JSON.parse(s);
+        if (st && st.geminiApiKey) return st.geminiApiKey;
+      }
+    } catch (e) {}
+    // 3) Свой ключ
+    try {
+      const k = localStorage.getItem(LS_KEY);
+      if (k) return k;
+    } catch (e) {}
+    return null;
+  }
+
+  function askForApiKey() {
+    const k = prompt(
+      'Введите ключ Gemini API (начинается с AIza...).\n' +
+      'Получить: https://aistudio.google.com/apikey\n\n' +
+      'Ключ сохранится только в этом браузере.'
+    );
+    if (k && k.trim()) {
+      try { localStorage.setItem(LS_KEY, k.trim()); } catch (e) {}
+      addMsg('Ключ сохранён. Можно общаться!', 'sys');
+      return k.trim();
+    }
+    return null;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     TTS — синтез речи
+     ═══════════════════════════════════════════════════════════════ */
+  function speak(text) {
+    if (!('speechSynthesis' in window)) return;
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ru-RU';
+      u.rate = 1.05;
+      u.pitch = 0.95;
+      // Пытаемся найти русский голос
+      const voices = speechSynthesis.getVoices();
+      const ru = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('ru'));
+      if (ru) u.voice = ru;
+      u.onstart = () => { speaking = true; };
+      u.onend = () => { speaking = false; };
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  // Прогреваем голоса
+  if ('speechSynthesis' in window) {
+    speechSynthesis.getVoices();
+    speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     STT — распознавание речи
+     ═══════════════════════════════════════════════════════════════ */
+  function initRecognition() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return null;
+    const r = new SR();
+    r.lang = 'ru-RU';
+    r.continuous = false;
+    r.interimResults = false;
+    r.maxAlternatives = 1;
+
+    r.onstart = () => {
+      listening = true;
+      micBtn.classList.add('listening');
+      fab.classList.add('listening');
+      setStatus('Слушаю…');
+    };
+    r.onend = () => {
+      listening = false;
+      micBtn.classList.remove('listening');
+      fab.classList.remove('listening');
+      setStatus('Gemini 3.6 Flash · готов');
+    };
+    r.onerror = (e) => {
+      listening = false;
+      micBtn.classList.remove('listening');
+      fab.classList.remove('listening');
+      if (e.error === 'not-allowed') {
+        addMsg('Микрофон запрещён. Разреши доступ в браузере.', 'err');
+      } else if (e.error === 'no-speech') {
+        // тихо игнорируем
+      } else {
+        addMsg('Ошибка распознавания: ' + e.error, 'err');
+      }
+      setStatus('Gemini 3.6 Flash · готов');
+    };
+    r.onresult = (e) => {
+      const text = e.results[0][0].transcript.trim();
+      if (text) {
+        input.value = text;
+        sendMessage(text);
+      }
+    };
+    return r;
+  }
+  recognition = initRecognition();
+
+  function toggleMic() {
+    if (!recognition) {
+      addMsg('Браузер не поддерживает распознавание речи. Используй текст.', 'err');
+      return;
+    }
+    if (listening) {
+      try { recognition.stop(); } catch (e) {}
+      return;
+    }
+    try {
+      recognition.start();
+    } catch (e) {
+      // уже запущено — перезапустим
+      try { recognition.stop(); } catch (e2) {}
+      setTimeout(() => { try { recognition.start(); } catch (e3) {} }, 200);
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     ВЫПОЛНЕНИЕ ФУНКЦИЙ (tools)
+     ═══════════════════════════════════════════════════════════════ */
+  async function execTool(name, args) {
+    args = args || {};
+    const C = window.Client;
+
+    // Прямой доступ к PyOS ядру (если открыто как расширение в iframe)
+    const hasCore = C && typeof C.request === 'function';
+
+    try {
+      switch (name) {
+
+        case 'open_app': {
+          const appId = args.appId;
+          if (!appId) return { ok: false, error: 'Не указан appId' };
+          if (hasCore) {
+            await C.request('windows.openApp', { appId });
+          } else {
+            // Fallback: если dashboard standalone, просто уведомим
+            return { ok: false, error: 'Ядро PyOS недоступно (нет соединения)' };
+          }
+          return { ok: true, appId };
+        }
+
+        case 'close_app': {
+          if (!hasCore) return { ok: false, error: 'Ядро недоступно' };
+          const wins = await C.request('windows.list');
+          const targets = (wins || []).filter(w => w.appId === args.appId);
+          for (const w of targets) {
+            await C.request('windows.close', { id: w.id });
+          }
+          return { ok: true, closed: targets.length };
+        }
+
+        case 'list_windows': {
+          if (!hasCore) return { ok: false, error: 'Ядро недоступно' };
+          const wins = await C.request('windows.list');
+          return { ok: true, windows: (wins || []).map(w => ({ id: w.id, appId: w.appId, title: w.title })) };
+        }
+
+        case 'minimize_all': {
+          if (!hasCore) return { ok: false, error: 'Ядро недоступно' };
+          await C.request('WindowManager.minimizeAll');
+          return { ok: true };
+        }
+
+        case 'close_all': {
+          if (!hasCore) return { ok: false, error: 'Ядро недоступно' };
+          await C.request('WindowManager.closeAll');
+          return { ok: true };
+        }
+
+        case 'set_theme': {
+          if (hasCore) {
+            await C.request('config.set', { key: 'theme', value: args.theme });
+          }
+          // локально тоже применим
+          document.documentElement.setAttribute('data-theme', args.theme);
+          return { ok: true, theme: args.theme };
+        }
+
+        case 'toggle_theme': {
+          const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+          const next = cur === 'dark' ? 'light' : 'dark';
+          if (hasCore) {
+            await C.request('config.set', { key: 'theme', value: next });
+          }
+          document.documentElement.setAttribute('data-theme', next);
+          return { ok: true, theme: next };
+        }
+
+        case 'set_accent': {
+          if (hasCore) {
+            await C.request('config.set', { key: 'accent', value: args.color });
+          }
+          document.documentElement.style.setProperty('--pyos-accent', args.color);
+          return { ok: true, color: args.color };
+        }
+
+        case 'set_tiling': {
+          if (!hasCore) return { ok: false, error: 'Ядро недоступно' };
+          await C.request('config.set', { key: 'tilingLayout', value: args.layout });
+          await C.request('WindowManager.tileAll');
+          return { ok: true, layout: args.layout };
+        }
+
+        case 'tile_all': {
+          if (!hasCore) return { ok: false, error: 'Ядро недоступно' };
+          await C.request('WindowManager.tileAll');
+          return { ok: true };
+        }
+
+        case 'set_workspace': {
+          if (!hasCore) return { ok: false, error: 'Ядро недоступно' };
+          await C.request('WindowManager.setWorkspace', args.number);
+          return { ok: true, number: args.number };
+        }
+
+        case 'notify': {
+          if (hasCore) {
+            await C.request('notify', {
+              type: args.type || 'info',
+              title: args.title,
+              message: args.message || ''
+            });
+          } else {
+            addMsg(args.title + (args.message ? ' — ' + args.message : ''), 'sys');
+          }
+          return { ok: true };
+        }
+
+        case 'lock_screen': {
+          if (window.PyLock && typeof PyLock.lock === 'function') {
+            PyLock.lock();
+            return { ok: true };
+          }
+          return { ok: false, error: 'Экран блокировки недоступен' };
+        }
+
+        case 'search_files': {
+          if (!hasCore) return { ok: false, error: 'Ядро недоступно' };
+          const found = await C.request('files.search', { query: args.query });
+          return { ok: true, files: (found || []).slice(0, 10).map(f => f.path) };
+        }
+
+        case 'open_file': {
+          if (!hasCore) return { ok: false, error: 'Ядро недоступно' };
+          await C.request('windows.openApp', { appId: 'editor', options: { openPath: args.path } });
+          return { ok: true, path: args.path };
+        }
+
+        case 'get_time': {
+          const now = new Date();
+          return {
+            ok: true,
+            time: now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+            date: now.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+          };
+        }
+
+        default:
+          return { ok: false, error: 'Неизвестная функция: ' + name };
+      }
+    } catch (e) {
+      return { ok: false, error: (e && e.message) || String(e) };
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     GEMINI API
+     ═══════════════════════════════════════════════════════════════ */
+  function buildContents() {
+    const contents = [];
+    history.forEach(m => {
+      contents.push({
+        role: m.role === 'user' ? 'user' : 'model',
+        parts: [{ text: m.text }]
+      });
+    });
+    return contents;
+  }
+
+  async function callGemini(apiKey, contents) {
+    const url = API_BASE + encodeURIComponent(MODEL) + ':generateContent?key=' + encodeURIComponent(apiKey);
+    const body = {
+      contents: contents,
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      tools: TOOLS,
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 1024,
+        topP: 0.95
+      }
+    };
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const msg = (data && data.error && data.error.message) || ('HTTP ' + res.status);
+      throw new Error(msg);
+    }
+    return data;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     ОСНОВНОЙ ЦИКЛ
+     ═══════════════════════════════════════════════════════════════ */
+  async function sendMessage(textOverride) {
+    const text = (textOverride !== undefined ? textOverride : input.value).trim();
+    if (!text || busy) return;
+    input.value = '';
+
+    addMsg(text, 'user');
+    history.push({ role: 'user', text: text });
+    trimHistory();
+
+    const apiKey = getApiKey();
+    if (!apiKey) {
+      addMsg('Нужен ключ Gemini API.', 'err');
+      const k = askForApiKey();
+      if (!k) return;
+    }
+
+    busy = true;
+    setStatus('Думаю…');
+    const typingEl = addTyping();
+
+    try {
+      let contents = buildContents();
+      let loops = 0;
+      let finalText = '';
+
+      while (loops < 4) {
+        loops++;
+        const data = await callGemini(apiKey, contents);
+
+        const candidate = data.candidates && data.candidates[0];
+        if (!candidate) throw new Error('Пустой ответ модели');
+
+        const parts = (candidate.content && candidate.content.parts) || [];
+        let textPart = '';
+        const calls = [];
+
+        parts.forEach(p => {
+          if (p.text) textPart += p.text;
+          if (p.functionCall) calls.push(p.functionCall);
+        });
+
+        if (textPart && !finalText) finalText = textPart;
+
+        // Если модель вызвала функции — выполняем и продолжаем
+        if (calls.length > 0) {
+          // Добавляем сообщение модели в историю API
+          const modelParts = [];
+          if (textPart) modelParts.push({ text: textPart });
+          calls.forEach(c => modelParts.push({ functionCall: c }));
+          contents.push({ role: 'model', parts: modelParts });
+
+          // Выполняем каждую функцию
+          const responseParts = [];
+          for (const call of calls) {
+            const callName = call.name;
+            const callArgs = call.args || {};
+            typingEl.remove();
+            const toolEl = addMsg('⚙️ ' + callName + ' ' + JSON.stringify(callArgs), 'tool');
+            const result = await execTool(callName, callArgs);
+            toolEl.textContent = '✅ ' + callName + ' → ' + JSON.stringify(result);
+            responseParts.push({
+              functionResponse: {
+                name: callName,
+                response: result
+              }
+            });
+          }
+          contents.push({ role: 'user', parts: responseParts });
+          // продолжаем цикл — модель обработает результаты
+          continue;
+        }
+
+        // Нет вызовов — финальный ответ
+        break;
+      }
+
+      typingEl.remove();
+
+      if (!finalText) {
+        finalText = 'Готово.';
+      }
+
+      addMsg(finalText, 'bot');
+      history.push({ role: 'model', text: finalText });
+      trimHistory();
+      saveHistory();
+
+      // Озвучиваем финальный ответ
+      speak(finalText);
+
+      setStatus('Gemini 3.6 Flash · готов');
+
+    } catch (e) {
+      if (typingEl && typingEl.parentNode) typingEl.remove();
+      const msg = (e && e.message) || String(e);
+      addMsg('Ошибка: ' + msg, 'err');
+      setStatus('Ошибка');
+      console.error('[JARVIS]', e);
+    } finally {
+      busy = false;
+    }
+  }
+
+  function trimHistory() {
+    if (history.length > MAX_HISTORY) {
+      history = history.slice(-MAX_HISTORY);
+    }
+  }
+
+  function saveHistory() {
+    try { localStorage.setItem(LS_HISTORY, JSON.stringify(history)); } catch (e) {}
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     СОБЫТИЯ UI
+     ═══════════════════════════════════════════════════════════════ */
+  function openPanel() {
+    panel.classList.add('open');
+    setTimeout(() => input.focus(), 200);
+    if (log.children.length === 0) {
+      addMsg('Привет! Я JARVIS. Скажи или напиши, что сделать: «открой терминал», «смени тему», «разложи окна».', 'sys');
+    }
+  }
+  function closePanel() { panel.classList.remove('open'); }
+  function togglePanel() {
+    if (panel.classList.contains('open')) closePanel(); else openPanel();
+  }
+
+  fab.addEventListener('click', () => {
+    // Игнорируем клик, если было перетаскивание
+    if (fab.dataset.dragged === '1') {
+      fab.dataset.dragged = '0';
+      return;
+    }
+    togglePanel();
+  });
+
+  // Перетаскивание FAB
+  (function makeDraggable(el) {
+    let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
+    el.addEventListener('pointerdown', e => {
+      if (e.button !== undefined && e.button !== 0) return;
+      dragging = true;
+      sx = e.clientX; sy = e.clientY;
+      const r = el.getBoundingClientRect();
+      ox = r.left; oy = r.top;
+      el.style.cursor = 'grabbing';
+      el.setPointerCapture(e.pointerId);
+    });
+    el.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      const dx = e.clientX - sx, dy = e.clientY - sy;
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) el.dataset.dragged = '1';
+      let nx = ox + dx, ny = oy + dy;
+      nx = Math.max(8, Math.min(window.innerWidth - el.offsetWidth - 8, nx));
+      ny = Math.max(8, Math.min(window.innerHeight - el.offsetHeight - 8, ny));
+      el.style.left = nx + 'px';
+      el.style.top = ny + 'px';
+      el.style.right = 'auto';
+      el.style.bottom = 'auto';
+    });
+    el.addEventListener('pointerup', () => {
+      dragging = false;
+      el.style.cursor = 'grab';
+      setTimeout(() => { el.dataset.dragged = '0'; }, 50);
+    });
+  })(fab);
+
+  closeBtn.addEventListener('click', closePanel);
+  sendBtn.addEventListener('click', () => sendMessage());
+  micBtn.addEventListener('click', toggleMic);
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  clearBtn.addEventListener('click', () => {
+    history = [];
+    log.innerHTML = '';
+    saveHistory();
+    addMsg('История очищена.', 'sys');
+  });
+
+  document.addEventListener('keydown', e => {
+    // Ctrl+Shift+J — открыть/закрыть JARVIS
+    if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j' || e.key === 'Й' || e.key === 'й')) {
+      e.preventDefault();
+      togglePanel();
+    }
+    // Esc — закрыть панель
+    if (e.key === 'Escape' && panel.classList.contains('open')) {
+      closePanel();
+    }
+  });
+
+  /* ═══════════════════════════════════════════════════════════════
+     ИНТЕГРАЦИЯ С BUS (реакция на события ядра)
+     ═══════════════════════════════════════════════════════════════ */
+  try {
+    if (window.Client && typeof Client.on === 'function') {
+      Client.on('window:created', (w) => {
+        // молча, не спамим
+      });
+      Client.on('workspace:changed', (n) => {
+        setStatus('Стол ' + n + ' · готов');
+      });
+    }
+  } catch (e) {}
+
+  /* ═══════════════════════════════════════════════════════════════
+     ПРИВЕТСТВИЕ
+     ═══════════════════════════════════════════════════════════════ */
+  console.log('[JARVIS] Ассистент загружен. Ctrl+Shift+J — открыть панель.');
+})();
+</script>
+<!-- ═══════════════════════════════════════════════════════════════════
+     /JARVIS
+     ═══════════════════════════════════════════════════════════════════ -->
 </body>
 </html>
