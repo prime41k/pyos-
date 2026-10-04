@@ -1,0 +1,3031 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PyOS Studio 3.0 · Операционная среда разработки</title>
+<!-- ══════════════════════════════════════════════════════════════════
+     PYOS STUDIO 3.0 — ПОЛНЫЙ ФАЙЛ
+     Структура:
+       [CSS-1]  токены темы
+       [CSS-2]  сброс и утилиты
+       [CSS-3]  анимации
+       [CSS-4]  обои
+       [CSS-5]  рабочий стол
+       [CSS-6]  панель задач
+       [CSS-7]  меню Пуск
+       [CSS-8]  окна
+       [CSS-9]  контекстные меню и тосты
+       [CSS-10] OOBE установка
+       [CSS-11] экран загрузки
+       [CSS-12] Jarvis
+       [CSS-13] приложения
+       [JS-A]   утилиты
+       [JS-B]   хранилище
+       [JS-C]   константы
+       [JS-D]   спрайт SVG (лого, иконки)
+       [JS-E]   тема
+       [JS-F]   виртуальная файловая система
+       [JS-G]   уведомления и контекстные меню
+       [JS-H]   оконный менеджер
+       [JS-I]   реестр приложений
+       [JS-J]   терминал
+       [JS-K]   файлы
+       [JS-L]   редактор
+       [JS-M]   калькулятор
+       [JS-N]   заметки
+       [JS-O]   настройки
+       [JS-P]   о системе
+       [JS-Q]   плагины + документация
+       [JS-R]   студия плагинов
+       [JS-S]   Jarvis
+       [JS-T]   оболочка (стол, панель, Пуск, трей)
+       [JS-U]   блокировка / выключение / сброс
+       [JS-V]   экран загрузки
+       [JS-W]   OOBE
+       [JS-X]   вход на рабочий стол
+       [JS-Y]   инициализация
+     ══════════════════════════════════════════════════════════════════ -->
+<style>
+/* ══════════ [CSS-1] ТОКЕНЫ ТЕМЫ ══════════ */
+:root{
+  --acc:#4f8cff;
+  --acc2:#8a5cff;
+  --bg:#0a0d13;
+  --panel:rgba(17,22,31,.86);
+  --panel2:#151c28;
+  --line:#243044;
+  --txt:#e9eef7;
+  --mut:#8b96a9;
+  --ok:#3ddc84;
+  --warn:#ffb454;
+  --err:#ff5c7a;
+  --rad:14px;
+  --shadow:0 24px 70px rgba(0,0,0,.55);
+  --fast:.16s;
+  --med:.34s;
+  --blur:saturate(160%) blur(18px);
+}
+/* ══════════ [CSS-2] СБРОС И УТИЛИТЫ ══════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--txt);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+.py-root{
+  position:fixed;inset:0;z-index:1;
+  user-select:none;overflow:hidden;
+}
+.py-root input,.py-root textarea{user-select:text;font-family:inherit}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{
+  background:#2b3850;border-radius:8px;
+  border:2px solid transparent;background-clip:content-box;
+}
+::-webkit-scrollbar-thumb:hover{background:#3b4a68;background-clip:content-box;border:2px solid transparent}
+.py-hidden{display:none !important}
+.py-flex1{flex:1}
+button{font-family:inherit;cursor:pointer}
+.py-note{
+  font-size:11.5px;color:var(--mut);line-height:1.5;
+  padding:10px 13px;border:1px dashed var(--line);
+  border-radius:10px;margin-top:12px;
+}
+/* ══════════ [CSS-3] АНИМАЦИИ ══════════ */
+@keyframes pyFade{from{opacity:0}to{opacity:1}}
+@keyframes pyUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pyPop{0%{opacity:0;transform:scale(.82)}70%{transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
+@keyframes pySlideL{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pySlideR{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pyGlow{
+  0%,100%{filter:drop-shadow(0 0 12px rgba(79,140,255,.55))}
+  50%{filter:drop-shadow(0 0 34px rgba(138,92,255,.9))}
+}
+@keyframes pyFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes pyBreath{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.06);opacity:1}}
+@keyframes pyShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes pyBlink{0%,100%{opacity:1}50%{opacity:.15}}
+@keyframes pyToastIn{from{opacity:0;transform:translateX(60px) scale(.92)}to{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes pyToastOut{to{opacity:0;transform:translateX(60px) scale(.92)}}
+@keyframes pyRipple{to{transform:scale(3.2);opacity:0}}
+@keyframes pyOrbRing{0%{transform:scale(.8);opacity:.9}100%{transform:scale(1.9);opacity:0}}
+@keyframes pyScan{from{transform:translateY(-120%)}to{transform:translateY(1400%)}}
+@keyframes pyBootSlide{0%{transform:translateX(-110%)}100%{transform:translateX(560%)}}
+@keyframes pyWaveBar{0%,100%{height:6px}50%{height:22px}}
+.py-anim-none *{animation-duration:.001s !important;transition-duration:.001s !important}
+.py-ripple{
+  position:absolute;border-radius:50%;
+  background:rgba(255,255,255,.4);
+  transform:scale(0);
+  animation:pyRipple .55s ease-out forwards;
+  pointer-events:none;
+}
+/* ══════════ [CSS-4] ОБОИ ══════════ */
+.py-wall{position:absolute;inset:0;transition:opacity .8s ease}
+.py-wall.wp-aurora{
+  background:linear-gradient(125deg,#071022,#0c2b4e,#0e4d4a,#123,#071022);
+  background-size:300% 300%;animation:pyShift 26s ease infinite;
+}
+.py-wall.wp-sunset{
+  background:linear-gradient(125deg,#1a0b2e,#45163f,#7a1f3d,#2a0f22,#1a0b2e);
+  background-size:300% 300%;animation:pyShift 30s ease infinite;
+}
+.py-wall.wp-ocean{
+  background:linear-gradient(125deg,#03131f,#06304a,#0a4f66,#062033,#03131f);
+  background-size:300% 300%;animation:pyShift 24s ease infinite;
+}
+.py-wall.wp-matrix{
+  background:linear-gradient(125deg,#020d06,#052812,#0a3d1c,#031407,#020d06);
+  background-size:300% 300%;animation:pyShift 22s ease infinite;
+}
+.py-wall.wp-carbon{
+  background:
+    radial-gradient(1100px 560px at 72% 18%,rgba(79,140,255,.16),transparent 60%),
+    radial-gradient(900px 500px at 18% 82%,rgba(138,92,255,.14),transparent 60%),
+    #0a0d13;
+}
+.py-wall.wp-grid{
+  background:
+    linear-gradient(rgba(79,140,255,.07) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(79,140,255,.07) 1px,transparent 1px),
+    linear-gradient(160deg,#0a0f18,#101a2c);
+  background-size:44px 44px,44px 44px,100% 100%;
+}
+.py-wall-glow{
+  position:absolute;width:46vw;height:46vw;border-radius:50%;
+  filter:blur(90px);opacity:.35;pointer-events:none;
+}
+.py-wall-glow.g1{background:var(--acc);top:-12vw;right:-8vw;animation:pyFloat 11s ease-in-out infinite}
+.py-wall-glow.g2{background:var(--acc2);bottom:-14vw;left:-10vw;animation:pyFloat 14s ease-in-out infinite reverse}
+/* ══════════ [CSS-5] РАБОЧИЙ СТОЛ ══════════ */
+.py-desktop{position:absolute;inset:0 0 52px 0;overflow:hidden}
+.py-icons{
+  position:absolute;inset:14px;
+  display:flex;flex-direction:column;flex-wrap:wrap;
+  align-content:flex-start;gap:6px;
+}
+.py-dicon{
+  width:96px;padding:10px 6px;border-radius:12px;
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  cursor:pointer;border:1px solid transparent;
+  transition:background var(--fast),transform var(--fast),border var(--fast);
+  animation:pyPop .5s ease backwards;
+}
+.py-dicon:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.09);transform:translateY(-2px)}
+.py-dicon:active{transform:scale(.96)}
+.py-dicon .ic{width:42px;height:42px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.45))}
+.py-dicon span{font-size:12px;text-align:center;line-height:1.25;text-shadow:0 2px 6px rgba(0,0,0,.8)}
+/* ══════════ [CSS-6] ПАНЕЛЬ ЗАДАЧ ══════════ */
+.py-taskbar{
+  position:absolute;left:0;right:0;bottom:0;height:52px;
+  background:var(--panel);
+  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border-top:1px solid var(--line);
+  display:flex;align-items:center;padding:0 10px;gap:6px;
+  z-index:800;animation:pyUp .6s ease backwards;
+}
+.py-startbtn{
+  width:42px;height:42px;border-radius:11px;
+  display:grid;place-items:center;cursor:pointer;
+  border:1px solid transparent;transition:all var(--fast);flex:none;
+}
+.py-startbtn:hover{background:rgba(255,255,255,.08);border-color:var(--line);transform:translateY(-2px)}
+.py-startbtn:active{transform:scale(.92)}
+.py-startbtn svg{width:27px;height:27px}
+.py-tb-apps{display:flex;gap:5px;flex:1;overflow-x:auto;padding:0 4px;scrollbar-width:none}
+.py-tb-apps::-webkit-scrollbar{display:none}
+.py-tb-item{
+  height:40px;min-width:44px;padding:0 12px;border-radius:10px;
+  display:flex;align-items:center;gap:8px;cursor:pointer;
+  border:1px solid transparent;position:relative;
+  transition:all var(--fast);flex:none;font-size:12.5px;color:var(--mut);
+}
+.py-tb-item:hover{background:rgba(255,255,255,.07)}
+.py-tb-item.on{background:rgba(255,255,255,.09);border-color:var(--line);color:var(--txt)}
+.py-tb-item.min{opacity:.55}
+.py-tb-item .dot{
+  position:absolute;bottom:3px;left:50%;transform:translateX(-50%);
+  width:16px;height:3px;border-radius:3px;
+  background:var(--acc);box-shadow:0 0 8px var(--acc);
+}
+.py-tb-item svg{width:20px;height:20px;flex:none}
+.py-tray{display:flex;align-items:center;gap:4px;flex:none}
+.py-tray-btn{
+  height:40px;padding:0 9px;border-radius:10px;
+  display:flex;align-items:center;gap:7px;cursor:pointer;
+  color:var(--mut);transition:all var(--fast);border:1px solid transparent;
+}
+.py-tray-btn:hover{background:rgba(255,255,255,.07);color:var(--txt)}
+.py-tray-btn svg{width:17px;height:17px}
+.py-clock{
+  text-align:right;line-height:1.25;font-size:12px;color:var(--txt);
+  padding:0 8px;cursor:pointer;border-radius:10px;height:40px;
+  display:flex;flex-direction:column;justify-content:center;
+  transition:background var(--fast);
+}
+.py-clock:hover{background:rgba(255,255,255,.07)}
+.py-clock b{font-size:13px;font-weight:600}
+.py-clock i{font-style:normal;color:var(--mut);font-size:11px}
+.py-jdot{width:9px;height:9px;border-radius:50%;background:var(--mut);flex:none}
+.py-jdot.live{background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pyBreath 2s infinite}
+/* ══════════ [CSS-7] МЕНЮ ПУСК ══════════ */
+.py-start{
+  position:absolute;left:10px;bottom:62px;
+  width:560px;max-width:calc(100vw - 20px);
+  height:560px;max-height:calc(100vh - 80px);
+  background:var(--panel);
+  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border:1px solid var(--line);border-radius:20px;
+  box-shadow:var(--shadow);z-index:850;
+  display:flex;flex-direction:column;overflow:hidden;
+  transform-origin:bottom left;
+  animation:pyPop .28s cubic-bezier(.2,.9,.3,1.2);
+}
+.py-start-head{padding:20px 22px 12px;display:flex;align-items:center;gap:14px}
+.py-start-head svg{width:44px;height:44px;animation:pyGlow 4s ease infinite;flex:none}
+.py-start-head .t b{font-size:16px;display:block}
+.py-start-head .t i{font-style:normal;font-size:11.5px;color:var(--mut)}
+.py-search{margin:4px 22px 14px;position:relative}
+.py-search svg{
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  width:16px;height:16px;color:var(--mut);pointer-events:none;
+}
+.py-search input{
+  width:100%;height:40px;border-radius:12px;border:1px solid var(--line);
+  background:rgba(0,0,0,.28);color:var(--txt);
+  padding:0 14px 0 38px;font-size:13.5px;outline:none;
+  transition:border var(--fast),box-shadow var(--fast);
+}
+.py-search input:focus{border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 25%,transparent)}
+.py-start-apps{
+  flex:1;overflow-y:auto;padding:2px 16px 12px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));
+  gap:8px;align-content:start;
+}
+.py-sapp{
+  padding:14px 8px 12px;border-radius:14px;
+  display:flex;flex-direction:column;align-items:center;gap:9px;
+  cursor:pointer;border:1px solid transparent;
+  transition:all var(--fast);animation:pyUp .4s ease backwards;
+}
+.py-sapp:hover{background:rgba(255,255,255,.07);border-color:var(--line);transform:translateY(-3px)}
+.py-sapp svg{width:32px;height:32px}
+.py-sapp span{font-size:12px;text-align:center;color:var(--txt)}
+.py-start-foot{
+  border-top:1px solid var(--line);padding:11px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(0,0,0,.22);
+}
+.py-userchip{
+  display:flex;align-items:center;gap:10px;
+  padding:6px 10px;border-radius:11px;cursor:pointer;
+  transition:background var(--fast);
+}
+.py-userchip:hover{background:rgba(255,255,255,.08)}
+.py-ava{
+  width:34px;height:34px;border-radius:50%;
+  display:grid;place-items:center;font-weight:700;font-size:14px;color:#fff;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));
+  box-shadow:0 4px 14px color-mix(in srgb,var(--acc) 50%,transparent);
+  flex:none;
+}
+.py-userchip span{font-size:13px}
+.py-power{display:flex;gap:4px}
+.py-pbtn{
+  width:38px;height:38px;border-radius:10px;
+  display:grid;place-items:center;cursor:pointer;
+  color:var(--mut);border:1px solid transparent;transition:all var(--fast);
+}
+.py-pbtn:hover{color:var(--err);background:rgba(255,92,122,.12);border-color:rgba(255,92,122,.3)}
+.py-pbtn svg{width:18px;height:18px}
+/* ══════════ [CSS-8] ОКНА ══════════ */
+.py-win{
+  position:absolute;min-width:340px;min-height:220px;
+  background:var(--panel2);border:1px solid var(--line);
+  border-radius:var(--rad);box-shadow:var(--shadow);
+  display:flex;flex-direction:column;overflow:hidden;
+  animation:pyPop .3s cubic-bezier(.2,.9,.3,1.15);
+  transition:box-shadow var(--fast);
+}
+.py-win.focused{
+  border-color:color-mix(in srgb,var(--acc) 55%,var(--line));
+  box-shadow:0 30px 90px rgba(0,0,0,.65),0 0 0 1px color-mix(in srgb,var(--acc) 30%,transparent);
+}
+.py-win.maxed{border-radius:0}
+.py-win.closing{animation:pyWinOut .22s ease forwards}
+@keyframes pyWinOut{to{opacity:0;transform:scale(.9) translateY(18px)}}
+.py-win.mini{animation:pyWinMin .25s ease forwards}
+@keyframes pyWinMin{to{opacity:0;transform:scale(.7) translateY(120px)}}
+.py-titlebar{
+  height:40px;display:flex;align-items:center;gap:10px;
+  padding:0 8px 0 14px;background:rgba(0,0,0,.28);
+  border-bottom:1px solid var(--line);flex:none;
+}
+.py-titlebar .tic{width:17px;height:17px;flex:none}
+.py-titlebar .ttl{
+  font-size:13px;font-weight:600;flex:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:grab;
+}
+.py-wbtn{
+  width:30px;height:28px;border-radius:8px;
+  display:grid;place-items:center;cursor:pointer;
+  color:var(--mut);flex:none;transition:all var(--fast);
+}
+.py-wbtn:hover{background:rgba(255,255,255,.1);color:var(--txt)}
+.py-wbtn.close:hover{background:var(--err);color:#fff}
+.py-wbtn svg{width:13px;height:13px}
+.py-wbody{flex:1;overflow:auto;position:relative}
+.py-resize{position:absolute;width:18px;height:18px;right:0;bottom:0;cursor:nwse-resize;z-index:5}
+.py-resize::after{
+  content:"";position:absolute;right:5px;bottom:5px;width:8px;height:8px;
+  border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);opacity:.6;
+}
+.py-snap{
+  position:absolute;top:0;bottom:52px;width:50%;
+  background:color-mix(in srgb,var(--acc) 14%,transparent);
+  border:2px dashed color-mix(in srgb,var(--acc) 60%,transparent);
+  z-index:790;display:none;pointer-events:none;animation:pyFade .2s ease;
+}
+.py-snap.l{left:0;border-radius:0 18px 18px 0}
+.py-snap.r{right:0;border-radius:18px 0 0 18px}
+.py-snap.on{display:block}
+/* ══════════ [CSS-9] КОНТЕКСТНЫЕ МЕНЮ И ТОСТЫ ══════════ */
+.py-ctx{
+  position:fixed;min-width:210px;
+  background:var(--panel);
+  backdrop-filter:var(--blur);
+  border:1px solid var(--line);border-radius:12px;
+  box-shadow:var(--shadow);z-index:2000;padding:6px;
+  animation:pyPop .16s ease;transform-origin:top left;
+}
+.py-ctx .ci{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 11px;border-radius:8px;font-size:13px;
+  cursor:pointer;color:var(--txt);transition:background var(--fast);
+}
+.py-ctx .ci:hover{background:color-mix(in srgb,var(--acc) 22%,transparent)}
+.py-ctx .ci.danger{color:var(--err)}
+.py-ctx .ci svg{width:15px;height:15px;flex:none}
+.py-ctx .sep{height:1px;background:var(--line);margin:5px 8px}
+.py-toasts{
+  position:fixed;top:14px;right:14px;
+  display:flex;flex-direction:column;gap:10px;
+  z-index:3000;pointer-events:none;
+}
+.py-toast{
+  width:320px;background:var(--panel);
+  backdrop-filter:var(--blur);
+  border:1px solid var(--line);border-left:3px solid var(--acc);
+  border-radius:13px;padding:13px 15px;box-shadow:var(--shadow);
+  animation:pyToastIn .35s cubic-bezier(.2,.9,.3,1.2);pointer-events:auto;
+}
+.py-toast.bye{animation:pyToastOut .3s ease forwards}
+.py-toast b{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:4px}
+.py-toast b svg{width:15px;height:15px;color:var(--acc)}
+.py-toast p{font-size:12.5px;color:var(--mut);line-height:1.45}
+/* ══════════ [CSS-10] OOBE УСТАНОВКА ══════════ */
+.py-oobe{
+  position:absolute;inset:0;z-index:900;
+  display:flex;align-items:center;justify-content:center;
+  background:
+    radial-gradient(900px 500px at 80% 10%,color-mix(in srgb,var(--acc) 20%,transparent),transparent 60%),
+    radial-gradient(800px 500px at 15% 90%,color-mix(in srgb,var(--acc2) 18%,transparent),transparent 60%),
+    var(--bg);
+  animation:pyFade .6s ease;
+}
+.py-oobe-card{
+  width:860px;max-width:calc(100vw - 40px);
+  height:600px;max-height:calc(100vh - 40px);
+  background:var(--panel);
+  backdrop-filter:var(--blur);
+  border:1px solid var(--line);border-radius:24px;
+  box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;
+  animation:pyPop .5s cubic-bezier(.2,.9,.3,1.15);
+}
+.py-oobe-top{padding:20px 30px 0;display:flex;align-items:center;gap:13px}
+.py-oobe-top svg{width:34px;height:34px}
+.py-oobe-top b{font-size:15px}
+.py-oobe-top .step{margin-left:auto;font-size:12px;color:var(--mut)}
+.py-oobe-prog{margin:14px 30px 0;height:4px;border-radius:4px;background:var(--line);overflow:hidden}
+.py-oobe-prog i{
+  display:block;height:100%;width:0%;border-radius:4px;
+  background:linear-gradient(90deg,var(--acc),var(--acc2));
+  transition:width .6s cubic-bezier(.3,.8,.3,1);
+  box-shadow:0 0 12px var(--acc);
+}
+.py-oobe-body{flex:1;overflow-y:auto;padding:26px 34px}
+.py-oobe-step{animation:pySlideR .45s cubic-bezier(.25,.8,.3,1)}
+.py-oobe-step.back{animation:pySlideL .45s cubic-bezier(.25,.8,.3,1)}
+.py-oobe-step h1{
+  font-size:27px;margin-bottom:8px;
+  background:linear-gradient(90deg,#fff,#b9c8e6);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.py-oobe-step .sub{color:var(--mut);font-size:14px;margin-bottom:22px;line-height:1.5}
+.py-oobe-foot{
+  border-top:1px solid var(--line);padding:16px 30px;
+  display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.2);
+}
+.py-oobe-foot .hint{font-size:12px;color:var(--mut);flex:1}
+.py-btn{
+  border:none;outline:none;font-size:13.5px;font-weight:600;color:#fff;
+  padding:11px 26px;border-radius:11px;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));
+  box-shadow:0 8px 22px color-mix(in srgb,var(--acc) 45%,transparent);
+  transition:all var(--fast);position:relative;overflow:hidden;
+}
+.py-btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px color-mix(in srgb,var(--acc) 60%,transparent)}
+.py-btn:active{transform:scale(.96)}
+.py-btn.ghost{background:rgba(255,255,255,.06);box-shadow:none;border:1px solid var(--line);color:var(--txt)}
+.py-btn.ghost:hover{background:rgba(255,255,255,.11)}
+.py-btn.small{padding:8px 16px;font-size:12.5px}
+.py-choice{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.py-card{
+  border:2px solid var(--line);background:rgba(255,255,255,.03);
+  border-radius:15px;padding:16px;cursor:pointer;
+  transition:all var(--fast);animation:pyUp .4s ease backwards;
+}
+.py-card:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--acc) 50%,var(--line));background:rgba(255,255,255,.05)}
+.py-card.sel{
+  border-color:var(--acc);
+  background:color-mix(in srgb,var(--acc) 14%,transparent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 22%,transparent);
+}
+.py-card b{display:block;font-size:13.5px;margin-bottom:4px}
+.py-card i{font-style:normal;font-size:11.5px;color:var(--mut);line-height:1.4;display:block}
+.py-swatch{width:100%;height:56px;border-radius:10px;margin-bottom:10px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.py-wprev{width:100%;height:66px;border-radius:10px;margin-bottom:10px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.py-field{margin-bottom:18px}
+.py-field label{display:block;font-size:12.5px;color:var(--mut);margin-bottom:7px;font-weight:600;letter-spacing:.3px}
+.py-input{
+  width:100%;height:42px;border-radius:11px;border:1px solid var(--line);
+  background:rgba(0,0,0,.3);color:var(--txt);padding:0 14px;
+  font-size:14px;outline:none;
+  transition:border var(--fast),box-shadow var(--fast);
+}
+.py-input:focus{border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 25%,transparent)}
+.py-toggle{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border:1px solid var(--line);border-radius:13px;
+  margin-bottom:11px;background:rgba(255,255,255,.03);
+  transition:border var(--fast);
+}
+.py-toggle:hover{border-color:color-mix(in srgb,var(--acc) 40%,var(--line))}
+.py-toggle .tl b{font-size:13.5px;display:block;margin-bottom:3px}
+.py-toggle .tl i{font-style:normal;font-size:11.5px;color:var(--mut)}
+.py-sw{
+  width:48px;height:26px;border-radius:20px;background:var(--line);
+  position:relative;cursor:pointer;transition:background var(--med);flex:none;
+}
+.py-sw::after{
+  content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;
+  border-radius:50%;background:#fff;transition:transform var(--med) cubic-bezier(.3,1.4,.5,1);
+}
+.py-sw.on{background:linear-gradient(90deg,var(--acc),var(--acc2))}
+.py-sw.on::after{transform:translateX(22px)}
+.py-install{text-align:center;padding-top:40px}
+.py-install svg{width:110px;height:110px;animation:pyGlow 3s ease infinite,pyFloat 5s ease-in-out infinite}
+.py-install h2{margin-top:22px;font-size:22px}
+.py-install .stage{color:var(--mut);font-size:13px;margin-top:8px;height:18px}
+.py-install .bar{width:420px;max-width:80%;height:8px;margin:26px auto 0;border-radius:8px;background:var(--line);overflow:hidden}
+.py-install .bar i{
+  display:block;height:100%;width:0%;border-radius:8px;
+  background:linear-gradient(90deg,var(--acc),var(--acc2),var(--acc));
+  background-size:200% 100%;animation:pyShift 2s linear infinite;
+  transition:width .4s ease;
+}
+.py-install .pct{margin-top:10px;font-size:12px;color:var(--mut)}
+/* ══════════ [CSS-11] ЭКРАН ЗАГРУЗКИ ══════════ */
+.py-boot{
+  position:absolute;inset:0;z-index:950;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:26px;animation:pyFade .5s ease;
+}
+.py-boot .scan{
+  position:absolute;left:0;right:0;height:90px;
+  background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--acc) 12%,transparent),transparent);
+  animation:pyScan 3.2s linear infinite;pointer-events:none;
+}
+.py-boot svg.big{width:130px;height:130px;animation:pyPop 1s cubic-bezier(.2,.9,.3,1.3),pyGlow 3.5s ease infinite}
+.py-boot .name{font-size:26px;font-weight:700;letter-spacing:3px;animation:pyUp .8s ease .2s backwards}
+.py-boot .name span{
+  background:linear-gradient(90deg,var(--acc),var(--acc2));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.py-boot .loader{width:220px;height:4px;border-radius:4px;background:var(--line);overflow:hidden}
+.py-boot .loader i{
+  display:block;height:100%;width:40%;border-radius:4px;
+  background:linear-gradient(90deg,var(--acc),var(--acc2));
+  animation:pyBootSlide 1.1s ease-in-out infinite;
+}
+.py-boot .st{font-size:12px;color:var(--mut);letter-spacing:1px;animation:pyBlink 1.6s infinite}
+/* ══════════ [CSS-12] JARVIS ══════════ */
+.py-orb{
+  position:absolute;right:22px;bottom:74px;width:58px;height:58px;
+  border-radius:50%;cursor:pointer;z-index:860;
+  display:grid;place-items:center;
+  background:radial-gradient(circle at 32% 30%,#fff3,transparent 40%),linear-gradient(135deg,var(--acc),var(--acc2));
+  box-shadow:0 10px 30px color-mix(in srgb,var(--acc) 55%,transparent);
+  transition:transform var(--fast);animation:pyFloat 5s ease-in-out infinite;
+}
+.py-orb:hover{transform:scale(1.08)}
+.py-orb:active{transform:scale(.94)}
+.py-orb svg{width:26px;height:26px;color:#fff}
+.py-orb .ring{position:absolute;inset:0;border-radius:50%;border:2px solid var(--acc);opacity:0}
+.py-orb.listening .ring{animation:pyOrbRing 1.2s ease-out infinite}
+.py-orb.listening{animation:pyBreath 1s ease-in-out infinite}
+.py-jarvis{
+  position:absolute;right:22px;bottom:140px;
+  width:400px;max-width:calc(100vw - 30px);
+  height:540px;max-height:calc(100vh - 180px);
+  background:var(--panel);
+  backdrop-filter:var(--blur);
+  border:1px solid var(--line);border-radius:20px;
+  box-shadow:var(--shadow);z-index:870;
+  display:flex;flex-direction:column;overflow:hidden;
+  transform-origin:bottom right;
+  animation:pyPop .3s cubic-bezier(.2,.9,.3,1.2);
+}
+.py-jv-head{
+  padding:15px 18px;display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid var(--line);background:rgba(0,0,0,.22);
+}
+.py-jv-head .core{
+  width:38px;height:38px;border-radius:50%;flex:none;
+  background:radial-gradient(circle at 32% 30%,#fff4,transparent 40%),linear-gradient(135deg,var(--acc),var(--acc2));
+  animation:pyBreath 2.4s infinite;
+}
+.py-jv-head b{font-size:14.5px;display:block}
+.py-jv-head i{font-style:normal;font-size:11px;color:var(--mut)}
+.py-jv-wave{margin-left:auto;display:flex;gap:3px;align-items:center;height:24px}
+.py-jv-wave s{width:3px;height:6px;border-radius:3px;background:var(--acc);text-decoration:none}
+.py-jv-wave.on s{animation:pyWaveBar .7s ease-in-out infinite}
+.py-jv-wave s:nth-child(2){animation-delay:.12s}
+.py-jv-wave s:nth-child(3){animation-delay:.24s}
+.py-jv-wave s:nth-child(4){animation-delay:.36s}
+.py-jv-wave s:nth-child(5){animation-delay:.48s}
+.py-jv-log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.py-jv-msg{
+  max-width:86%;padding:10px 13px;border-radius:14px;
+  font-size:13px;line-height:1.5;
+  animation:pyUp .3s ease backwards;
+  white-space:pre-wrap;word-break:break-word;
+}
+.py-jv-msg.j{
+  background:rgba(255,255,255,.07);border:1px solid var(--line);
+  border-bottom-left-radius:4px;align-self:flex-start;
+}
+.py-jv-msg.u{
+  background:linear-gradient(135deg,var(--acc),var(--acc2));
+  color:#fff;border-bottom-right-radius:4px;align-self:flex-end;
+}
+.py-jv-dots span{
+  display:inline-block;width:6px;height:6px;margin-right:4px;
+  border-radius:50%;background:var(--mut);
+  animation:pyFloat 1s ease-in-out infinite;
+}
+.py-jv-dots span:nth-child(2){animation-delay:.15s}
+.py-jv-dots span:nth-child(3){animation-delay:.3s}
+.py-jv-in{
+  border-top:1px solid var(--line);padding:12px;
+  display:flex;gap:8px;align-items:center;background:rgba(0,0,0,.2);
+}
+.py-jv-in input{
+  flex:1;height:40px;border-radius:20px;border:1px solid var(--line);
+  background:rgba(0,0,0,.3);color:var(--txt);padding:0 16px;
+  font-size:13px;outline:none;transition:border var(--fast);
+}
+.py-jv-in input:focus{border-color:var(--acc)}
+.py-mic{
+  width:42px;height:42px;border-radius:50%;
+  display:grid;place-items:center;
+  background:rgba(255,255,255,.08);color:var(--txt);
+  border:1px solid var(--line);transition:all var(--fast);flex:none;
+}
+.py-mic:hover{background:rgba(255,255,255,.14)}
+.py-mic.rec{background:linear-gradient(135deg,var(--err),#c2335a);border-color:transparent;animation:pyBreath .9s infinite}
+.py-mic svg{width:18px;height:18px}
+.py-jv-cmds{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 12px}
+.py-chip{
+  font-size:11px;padding:6px 11px;border-radius:20px;
+  border:1px solid var(--line);color:var(--mut);cursor:pointer;
+  transition:all var(--fast);background:rgba(255,255,255,.03);
+}
+.py-chip:hover{
+  color:#fff;border-color:var(--acc);
+  background:color-mix(in srgb,var(--acc) 18%,transparent);
+  transform:translateY(-2px);
+}
+/* ══════════ [CSS-13] ПРИЛОЖЕНИЯ ══════════ */
+.py-app{height:100%;display:flex;flex-direction:column;animation:pyFade .3s ease}
+.py-toolbar{
+  display:flex;align-items:center;gap:7px;padding:9px 12px;
+  border-bottom:1px solid var(--line);background:rgba(0,0,0,.18);
+  flex:none;flex-wrap:wrap;
+}
+.py-tbtn{
+  display:flex;align-items:center;gap:7px;padding:7px 13px;
+  border-radius:9px;font-size:12.5px;color:var(--mut);
+  border:1px solid transparent;transition:all var(--fast);
+  background:transparent;font-weight:600;
+}
+.py-tbtn:hover{background:rgba(255,255,255,.08);color:var(--txt);border-color:var(--line)}
+.py-tbtn.acc{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border-color:transparent}
+.py-tbtn svg{width:14px;height:14px}
+.py-status{
+  border-top:1px solid var(--line);padding:6px 13px;font-size:11.5px;
+  color:var(--mut);display:flex;gap:16px;background:rgba(0,0,0,.18);flex:none;
+}
+/* терминал */
+.py-term{
+  height:100%;background:#060910;
+  font-family:"Cascadia Code","JetBrains Mono",Consolas,monospace;
+  font-size:13px;padding:14px;overflow-y:auto;
+  display:flex;flex-direction:column;
+}
+.py-term .ln{white-space:pre-wrap;word-break:break-word;line-height:1.55;animation:pyFade .2s ease}
+.py-term .ln.ok{color:var(--ok)}
+.py-term .ln.err{color:var(--err)}
+.py-term .ln.warn{color:var(--warn)}
+.py-term .ln.info{color:var(--acc)}
+.py-term .ln.dim{color:var(--mut)}
+.py-term-in{display:flex;gap:8px;align-items:baseline}
+.py-term-in .ps{color:var(--ok);font-weight:700;flex:none}
+.py-term-in input{
+  flex:1;background:transparent;border:none;outline:none;
+  color:var(--txt);font-family:inherit;font-size:inherit;
+}
+/* файлы */
+.py-files-crumbs{display:flex;align-items:center;gap:4px;flex:1;overflow-x:auto;font-size:12.5px;scrollbar-width:none}
+.py-files-crumbs::-webkit-scrollbar{display:none}
+.py-crumb{padding:5px 10px;border-radius:7px;cursor:pointer;color:var(--mut);white-space:nowrap;transition:all var(--fast)}
+.py-crumb:hover{background:rgba(255,255,255,.08);color:var(--txt)}
+.py-crumb.cur{color:var(--acc);font-weight:700}
+.py-files-grid{
+  flex:1;overflow-y:auto;padding:16px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));
+  gap:8px;align-content:start;
+}
+.py-fitem{
+  padding:14px 6px 11px;border-radius:12px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  cursor:pointer;border:1px solid transparent;
+  transition:all var(--fast);animation:pyUp .3s ease backwards;
+}
+.py-fitem:hover{background:rgba(255,255,255,.06);border-color:var(--line);transform:translateY(-2px)}
+.py-fitem svg{width:38px;height:38px}
+.py-fitem span{font-size:11.5px;text-align:center;word-break:break-all;line-height:1.3}
+.py-fitem em{font-style:normal;font-size:10px;color:var(--mut)}
+/* редактор */
+.py-ed{flex:1;display:flex;min-height:0}
+.py-ed-gutter{
+  padding:12px 8px;text-align:right;color:#3d4a63;
+  font-family:Consolas,monospace;font-size:13px;line-height:1.6;
+  background:rgba(0,0,0,.25);border-right:1px solid var(--line);
+  min-width:46px;overflow:hidden;flex:none;
+}
+.py-ed textarea{
+  flex:1;background:transparent;border:none;outline:none;resize:none;
+  color:#dbe4f3;font-family:"Cascadia Code",Consolas,monospace;
+  font-size:13px;line-height:1.6;padding:12px 14px;white-space:pre;overflow:auto;
+}
+/* калькулятор */
+.py-calc{padding:18px;height:100%;display:flex;flex-direction:column;gap:12px}
+.py-calc-disp{
+  background:rgba(0,0,0,.35);border:1px solid var(--line);
+  border-radius:14px;padding:16px 18px;text-align:right;min-height:88px;
+  display:flex;flex-direction:column;justify-content:flex-end;gap:4px;
+}
+.py-calc-disp .ex{font-size:12px;color:var(--mut);min-height:16px;word-break:break-all}
+.py-calc-disp .res{font-size:34px;font-weight:700;word-break:break-all;animation:pyFade .2s ease}
+.py-calc-grid{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.py-calc-k{
+  border:1px solid var(--line);border-radius:12px;
+  background:rgba(255,255,255,.05);color:var(--txt);
+  font-size:18px;font-weight:600;cursor:pointer;
+  transition:all var(--fast);
+}
+.py-calc-k:hover{background:rgba(255,255,255,.12);transform:translateY(-2px)}
+.py-calc-k:active{transform:scale(.94)}
+.py-calc-k.op{color:var(--acc)}
+.py-calc-k.eq{background:linear-gradient(135deg,var(--acc),var(--acc2));border-color:transparent;color:#fff}
+/* настройки */
+.py-set{flex:1;display:flex;min-height:0}
+.py-set-nav{
+  width:190px;border-right:1px solid var(--line);padding:12px;
+  display:flex;flex-direction:column;gap:4px;flex:none;
+  overflow-y:auto;background:rgba(0,0,0,.14);
+}
+.py-set-nav .ni{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;
+  border-radius:10px;font-size:13px;cursor:pointer;color:var(--mut);
+  transition:all var(--fast);
+}
+.py-set-nav .ni:hover{background:rgba(255,255,255,.06);color:var(--txt)}
+.py-set-nav .ni.on{background:color-mix(in srgb,var(--acc) 20%,transparent);color:#fff;font-weight:600}
+.py-set-nav .ni svg{width:16px;height:16px;flex:none}
+.py-set-body{flex:1;overflow-y:auto;padding:22px 26px}
+.py-set-body h2{font-size:19px;margin-bottom:4px}
+.py-set-body .dsc{color:var(--mut);font-size:12.5px;margin-bottom:20px}
+.py-set-body h3{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--mut);margin:22px 0 12px}
+/* о системе */
+.py-about{padding:30px;display:flex;flex-direction:column;align-items:center;text-align:center;overflow-y:auto;height:100%}
+.py-about svg{width:120px;height:120px;animation:pyGlow 4s ease infinite,pyFloat 6s ease-in-out infinite}
+.py-about h1{margin-top:20px;font-size:26px}
+.py-about .ver{margin-top:6px;font-size:12.5px;color:var(--mut)}
+.py-about .badge{
+  margin-top:12px;padding:5px 14px;border-radius:20px;
+  border:1px solid var(--line);font-size:11px;color:var(--acc);
+  background:color-mix(in srgb,var(--acc) 10%,transparent);
+}
+.py-specs{margin-top:26px;width:100%;max-width:460px;display:flex;flex-direction:column;gap:8px}
+.py-spec{
+  display:flex;justify-content:space-between;gap:14px;
+  padding:11px 16px;border:1px solid var(--line);border-radius:11px;
+  background:rgba(255,255,255,.03);font-size:12.5px;
+  animation:pyUp .4s ease backwards;
+}
+.py-spec b{color:var(--mut);font-weight:600;flex:none}
+.py-spec span{text-align:right;word-break:break-word}
+/* студия плагинов */
+.py-plug-tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);padding:0 12px;background:rgba(0,0,0,.18);flex:none}
+.py-ptab{
+  padding:11px 18px;font-size:12.5px;font-weight:600;color:var(--mut);
+  cursor:pointer;border-bottom:2px solid transparent;transition:all var(--fast);
+}
+.py-ptab:hover{color:var(--txt)}
+.py-ptab.on{color:var(--acc);border-bottom-color:var(--acc)}
+.py-plug{flex:1;display:flex;min-height:0}
+.py-plug-docs-nav{width:230px;border-right:1px solid var(--line);overflow-y:auto;padding:12px;flex:none;background:rgba(0,0,0,.14)}
+.py-doc-cat{font-size:10.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mut);padding:12px 10px 6px}
+.py-doc-link{display:block;padding:8px 11px;border-radius:9px;font-size:12.5px;cursor:pointer;color:#b9c4d6;transition:all var(--fast)}
+.py-doc-link:hover{background:rgba(255,255,255,.06);color:#fff}
+.py-doc-link.on{background:color-mix(in srgb,var(--acc) 22%,transparent);color:#fff;font-weight:600}
+.py-plug-main{flex:1;overflow-y:auto;padding:24px 28px;min-width:0}
+.py-doc h2{font-size:21px;margin-bottom:6px}
+.py-doc .lead{color:var(--mut);font-size:13px;margin-bottom:18px;line-height:1.55}
+.py-doc h3{font-size:15px;margin:20px 0 9px;color:var(--acc)}
+.py-doc p{font-size:13px;line-height:1.65;margin-bottom:10px;color:#ccd5e4}
+.py-doc ul,.py-doc ol{margin:0 0 12px 20px;font-size:13px;line-height:1.7;color:#ccd5e4}
+.py-doc code{
+  font-family:Consolas,monospace;font-size:12px;
+  background:rgba(79,140,255,.14);border:1px solid rgba(79,140,255,.25);
+  padding:2px 6px;border-radius:6px;color:#9fc1ff;
+}
+.py-doc pre{
+  background:#070b12;border:1px solid var(--line);border-radius:12px;
+  padding:15px 17px;overflow-x:auto;margin:12px 0 16px;
+  font-family:Consolas,monospace;font-size:12.3px;line-height:1.6;color:#c8e0ff;
+}
+.py-doc table{width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:12.5px}
+.py-doc th{text-align:left;padding:9px 12px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--acc)}
+.py-doc td{padding:9px 12px;border:1px solid var(--line);color:#ccd5e4;vertical-align:top}
+.py-plug-item{
+  display:flex;align-items:center;gap:13px;
+  border:1px solid var(--line);border-radius:13px;
+  padding:14px 16px;margin-bottom:10px;background:rgba(255,255,255,.03);
+  animation:pyUp .3s ease backwards;
+}
+.py-plug-item .pi-ic{
+  width:40px;height:40px;border-radius:11px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));flex:none;
+}
+.py-plug-item .pi-ic svg{width:20px;height:20px;color:#fff}
+.py-plug-item .pi-t{flex:1;min-width:0}
+.py-plug-item .pi-t b{font-size:13.5px;display:block}
+.py-plug-item .pi-t i{font-style:normal;font-size:11.5px;color:var(--mut)}
+/* блокировка и выключение */
+.py-lock{
+  position:absolute;inset:0;z-index:980;
+  background:rgba(5,7,12,.82);
+  backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:18px;cursor:pointer;animation:pyFade .4s ease;
+}
+.py-lock svg{width:90px;height:90px;animation:pyFloat 5s ease-in-out infinite}
+.py-lock .lt{font-size:44px;font-weight:200}
+.py-lock .ld{color:var(--mut);font-size:14px}
+.py-lock .hint{margin-top:22px;color:var(--mut);font-size:12px;animation:pyBlink 2s infinite}
+.py-off{
+  position:absolute;inset:0;z-index:990;background:#000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:20px;animation:pyFade .6s ease;
+}
+.py-off .msg{color:#39424f;font-size:15px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<noscript><div style="padding:40px;font-family:sans-serif;color:#e9eef7">PyOS Studio требует JavaScript.</div></noscript>
+
+<!-- ══════════ [SVG-СПРАЙТ] ЛОГОТИП + ИКОНКИ ══════════ -->
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0" aria-hidden="true">
+<defs>
+  <linearGradient id="pylg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#4f8cff"/><stop offset="1" stop-color="#8a5cff"/>
+  </linearGradient>
+</defs>
+<!-- ЛОГОТИП PyOS: двойная змея Python в скруглённом квадрате -->
+<symbol id="py-logo" viewBox="0 0 120 120">
+  <rect x="4" y="4" width="112" height="112" rx="30" fill="url(#pylg)"/>
+  <rect x="4" y="4" width="112" height="112" rx="30" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="2"/>
+  <path d="M59.6 16c-11.4 0-18.6 5-18.6 13.4v10.4h20v4.4H30.6c-9.6 0-17.6 7.4-17.6 19.2 0 11.8 8 19.4 17.6 19.4h9.9V71.6c0-9 7.3-16.2 16.4-16.2h18.4c8.4 0 15.2-6.8 15.2-15.2V29.4C90.5 21 83 16 71.6 16H59.6zm-8.1 8.9a5.2 5.2 0 1 1 0 10.4 5.2 5.2 0 0 1 0-10.4z" fill="#fff"/>
+  <path d="M60.4 104c11.4 0 18.6-5 18.6-13.4V80.2h-20v-4.4h30.4c9.6 0 17.6-7.4 17.6-19.2 0-11.8-8-19.4-17.6-19.4h-9.9v11.2c0 9-7.3 16.2-16.4 16.2H44.7c-8.4 0-15.2 6.8-15.2 15.2v10.8c0 8.4 7.5 13.4 18.9 13.4h12zm8.1-8.9a5.2 5.2 0 1 1 0-10.4 5.2 5.2 0 0 1 0 10.4z" fill="rgba(255,255,255,.85)"/>
+  <circle cx="97" cy="23" r="4" fill="#fff" opacity=".9"/>
+</symbol>
+<symbol id="ic-term" viewBox="0 0 24 24"><path d="M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm2.4 3.2 3.3 3.3-3.3 3.3 1.2 1.2 4.5-4.5-4.5-4.5-1.2 1.2zM12 15h6v1.6h-6V15z" fill="currentColor"/></symbol>
+<symbol id="ic-files" viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z" fill="currentColor"/></symbol>
+<symbol id="ic-code" viewBox="0 0 24 24"><path d="m8.7 16.2-4.2-4.2 4.2-4.2 1.3 1.3-2.9 2.9 2.9 2.9-1.3 1.3zm6.6 0-1.3-1.3 2.9-2.9-2.9-2.9 1.3-1.3 4.2 4.2-4.2 4.2z" fill="currentColor"/></symbol>
+<symbol id="ic-calc" viewBox="0 0 24 24"><path d="M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm1 3v4h10V5H7zm0 6h2.2v2.2H7V11zm4 0h2.2v2.2H11V11zm4 0h2.2v2.2H15V11zM7 15h2.2v2.2H7V15zm4 0h2.2v2.2H11V15zm4 0h2.2v2.2H15V15z" fill="currentColor"/></symbol>
+<symbol id="ic-notes" viewBox="0 0 24 24"><path d="M5 2h9l5 5v15H5V2zm3 9v2h8v-2H8zm0 4v2h8v-2H8zm0-8v2h5V7H8z" fill="currentColor"/></symbol>
+<symbol id="ic-gear" viewBox="0 0 24 24"><path d="M12 8.5A3.5 3.5 0 1 1 8.5 12 3.5 3.5 0 0 1 12 8.5zm9 4.7v-2.4l-2.6-.5a6.9 6.9 0 0 0-.6-1.5l1.5-2.2-1.7-1.7-2.2 1.5a6.9 6.9 0 0 0-1.5-.6L13.2 3h-2.4l-.5 2.6a6.9 6.9 0 0 0-1.5.6L6.6 4.7 4.9 6.4l1.5 2.2a6.9 6.9 0 0 0-.6 1.5L3.2 10.8v2.4l2.6.5a6.9 6.9 0 0 0 .6 1.5l-1.5 2.2 1.7 1.7 2.2-1.5a6.9 6.9 0 0 0 1.5.6l.5 2.6h2.4l.5-2.6a6.9 6.9 0 0 0 1.5-.6l2.2 1.5 1.7-1.7-1.5-2.2a6.9 6.9 0 0 0 .6-1.5l2.6-.5z" fill="currentColor"/></symbol>
+<symbol id="ic-info" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 15h-2v-6h2zm0-8h-2V7h2z" fill="currentColor"/></symbol>
+<symbol id="ic-plug" viewBox="0 0 24 24"><path d="M16 9V4h-2v5h-4V4H8v5a4 4 0 0 0 3 3.87V17a2 2 0 0 1-2 2H7v2h2a4 4 0 0 0 4-4v-4.13A4 4 0 0 0 16 9z" fill="currentColor"/></symbol>
+<symbol id="ic-mic" viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11z" fill="currentColor"/></symbol>
+<symbol id="ic-power" viewBox="0 0 24 24"><path d="M13 3h-2v9h2V3zm4.8 2.2-1.4 1.4A7 7 0 1 1 7.6 6.6L6.2 5.2a9 9 0 1 0 11.6 0z" fill="currentColor"/></symbol>
+<symbol id="ic-search" viewBox="0 0 24 24"><path d="M10 4a6 6 0 1 0 3.5 10.9l5 5 1.4-1.4-5-5A6 6 0 0 0 10 4z" fill="currentColor"/></symbol>
+<symbol id="ic-lock" viewBox="0 0 24 24"><path d="M17 9V7A5 5 0 0 0 7 7v2H5v12h14V9zm-8 0V7a3 3 0 0 1 6 0v2z" fill="currentColor"/></symbol>
+<symbol id="ic-restart" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z" fill="currentColor"/></symbol>
+<symbol id="ic-plus" viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" fill="currentColor"/></symbol>
+<symbol id="ic-trash" viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v2H4V5h4l1-2zm-2 6h10l-.8 11.1A2 2 0 0 1 14.2 22H9.8a2 2 0 0 1-2-1.9L7 9z" fill="currentColor"/></symbol>
+<symbol id="ic-edit" viewBox="0 0 24 24"><path d="M16.9 3.5a2 2 0 0 1 2.8 0l.8.8a2 2 0 0 1 0 2.8L9 18.6 4 20l1.4-5L16.9 3.5z" fill="currentColor"/></symbol>
+<symbol id="ic-folder" viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z" fill="#ffca55"/></symbol>
+<symbol id="ic-file" viewBox="0 0 24 24"><path d="M6 2h8l5 5v15H6V2zm8 1.5V8h4.5L14 3.5z" fill="#9fb6dd"/></symbol>
+<symbol id="ic-pyfile" viewBox="0 0 24 24"><path d="M6 2h8l5 5v15H6V2zm8 1.5V8h4.5L14 3.5z" fill="#5b9dff"/><path d="M11.8 10c-1.7 0-2.8.7-2.8 2v1.4h2.8v.8H8.2c-1.4 0-2.4 1-2.4 2.6s1 2.6 2.4 2.6h1v-1.5c0-1.2 1-2.2 2.2-2.2h2.4c1.2 0 2.1-.9 2.1-2.1v-1.6c0-1.2-1.1-2-2.7-2h-1.4z" fill="#fff" opacity=".9"/></symbol>
+<symbol id="ic-minus" viewBox="0 0 24 24"><path d="M5 11h14v2H5z" fill="currentColor"/></symbol>
+<symbol id="ic-square" viewBox="0 0 24 24"><path d="M6 6h12v12H6V6zm2 2v8h8V8H8z" fill="currentColor"/></symbol>
+<symbol id="ic-close" viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6 10.6 12 5 6.4z" fill="currentColor"/></symbol>
+<symbol id="ic-doc" viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6V2zm3 8h6V8.5H9V10zm0 3h6v-1.5H9V13zm0 3h6v-1.5H9V16z" fill="currentColor"/></symbol>
+<symbol id="ic-play" viewBox="0 0 24 24"><path d="M7 4.5 19 12 7 19.5v-15z" fill="currentColor"/></symbol>
+<symbol id="ic-save" viewBox="0 0 24 24"><path d="M4 4h13l3 3v13H4V4zm3 2v4h7V6H7zm3 8a2.5 2.5 0 1 0 2.5 2.5A2.5 2.5 0 0 0 10 14z" fill="currentColor"/></symbol>
+<symbol id="ic-refresh" viewBox="0 0 24 24"><path d="M12 6V2L7 7l5 5V8a4 4 0 1 1-4 4H6a6 6 0 1 0 6-6z" fill="currentColor"/></symbol>
+<symbol id="ic-palette" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0 0 20c1.2 0 2-.9 2-2 0-.5-.2-1-.5-1.4-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.3A4.7 4.7 0 0 0 22 10.6C21.7 5.7 17.3 2 12 2zM6.5 12a1.5 1.5 0 1 1 1.5-1.5A1.5 1.5 0 0 1 6.5 12zm3-4A1.5 1.5 0 1 1 11 6.5 1.5 1.5 0 0 1 9.5 8zm5 0A1.5 1.5 0 1 1 16 6.5 1.5 1.5 0 0 1 14.5 8z" fill="currentColor"/></symbol>
+<symbol id="ic-wave" viewBox="0 0 24 24"><path d="M3 12h2.5l2-5 3 10 2.5-8 2 5H21" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="ic-user" viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4 0-8 2-8 5v2h16v-2c0-3-4-5-8-5z" fill="currentColor"/></symbol>
+<symbol id="ic-star" viewBox="0 0 24 24"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17l-6.1 3.6 1.4-6.8L2.2 9.1l6.9-.8z" fill="currentColor"/></symbol>
+</svg>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════
+   PYOS STUDIO 3.0 · ЯДРО СИСТЕМЫ
+   ════════════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+if(window.__PYOS3__){return;}
+window.__PYOS3__=true;
+
+/* ══════════ [JS-A] УТИЛИТЫ ══════════ */
+var $=function(sel,root){return (root||document).querySelector(sel);};
+var $$=function(sel,root){return Array.prototype.slice.call((root||document).querySelectorAll(sel));};
+function h(tag,props){
+  var el=document.createElement(tag);
+  var kids=Array.prototype.slice.call(arguments,2);
+  if(props){
+    Object.keys(props).forEach(function(k){
+      var v=props[k];
+      if(v===null||v===undefined){return;}
+      if(k==='class'){el.className=v;}
+      else if(k==='html'){el.innerHTML=v;}
+      else if(k==='style'&&typeof v==='object'){Object.assign(el.style,v);}
+      else if(k.indexOf('on')===0){el.addEventListener(k.slice(2),v);}
+      else{el.setAttribute(k,v);}
+    });
+  }
+  kids.forEach(function(k){
+    if(k===null||k===undefined){return;}
+    if(typeof k==='string'){el.appendChild(document.createTextNode(k));}
+    else if(k.nodeType){el.appendChild(k);}
+    else if(Array.isArray(k)){k.forEach(function(x){if(x)el.appendChild(x);});}
+  });
+  return el;
+}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function pad2(n){return (n<10?'0':'')+n;}
+function fmtTime(d){return pad2(d.getHours())+':'+pad2(d.getMinutes());}
+function fmtDate(d){
+  var m=['января','февраля','марта','апреля','мая','июня',
+    'июля','августа','сентября','октября','ноября','декабря'];
+  return d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear();
+}
+function fmtBytes(b){
+  if(b<1024){return b+' Б';}
+  if(b<1048576){return (b/1024).toFixed(1)+' КБ';}
+  return (b/1048576).toFixed(1)+' МБ';
+}
+var bus={map:{}};
+bus.on=function(ev,fn){(bus.map[ev]=bus.map[ev]||[]).push(fn);return fn;};
+bus.off=function(ev,fn){
+  if(bus.map[ev]){bus.map[ev]=bus.map[ev].filter(function(f){return f!==fn;});}
+};
+bus.emit=function(ev,data){
+  (bus.map[ev]||[]).forEach(function(fn){
+    try{fn(data);}catch(e){console.error('[PYOS bus]',ev,e);}
+  });
+};
+
+/* ══════════ [JS-B] ХРАНИЛИЩЕ ══════════ */
+var store={
+  prefix:'pyos3.',
+  get:function(k,def){
+    try{
+      var raw=localStorage.getItem(this.prefix+k);
+      return raw===null?def:JSON.parse(raw);
+    }catch(e){return def;}
+  },
+  set:function(k,v){
+    try{localStorage.setItem(this.prefix+k,JSON.stringify(v));}
+    catch(e){console.warn('[PYOS store] переполнение',e);}
+  },
+  del:function(k){localStorage.removeItem(this.prefix+k);},
+  wipe:function(){
+    var self=this;
+    Object.keys(localStorage).forEach(function(k){
+      if(k.indexOf(self.prefix)===0){localStorage.removeItem(k);}
+    });
+  }
+};
+
+/* ══════════ [JS-C] КОНСТАНТЫ ══════════ */
+var SYS={name:'PyOS Studio',version:'3.0',build:'A-3301-STABLE',
+  kernel:'py-core 3.0.1',codename:'Nebula'};
+var ACCENTS=[
+  {id:'blue',name:'Неон',a:'#4f8cff',b:'#8a5cff'},
+  {id:'green',name:'Матрица',a:'#3ddc84',b:'#1fa2ff'},
+  {id:'pink',name:'Закат',a:'#ff5c7a',b:'#ff9d5c'},
+  {id:'gold',name:'Янтарь',a:'#ffb454',b:'#ff5c7a'},
+  {id:'cyan',name:'Океан',a:'#22d3ee',b:'#4f8cff'},
+  {id:'violet',name:'Ультра',a:'#a855f7',b:'#ec4899'}
+];
+var WALLS=[
+  {id:'aurora',name:'Аврора',cls:'wp-aurora'},
+  {id:'sunset',name:'Закат',cls:'wp-sunset'},
+  {id:'ocean',name:'Океан',cls:'wp-ocean'},
+  {id:'matrix',name:'Матрица',cls:'wp-matrix'},
+  {id:'carbon',name:'Карбон',cls:'wp-carbon'},
+  {id:'grid',name:'Сетка',cls:'wp-grid'}
+];
+var AVATARS=['А','Б','В','Г','Д','П','Р','С','Т','Я'];
+var ICON_SET=['term','files','code','calc','notes','gear','info','plug','mic',
+  'power','search','lock','restart','plus','trash','edit','folder','file',
+  'pyfile','doc','play','save','refresh','palette','wave','user','star'];
+
+/* ══════════ [JS-D] КОРНЕВОЙ КОНТЕЙНЕР + SVG-ХЕЛПЕРЫ ══════════ */
+var root=h('div',{class:'py-root',id:'pyos-root'});
+document.body.appendChild(root);
+var svgNS='http://www.w3.org/2000/svg';
+function svgUse(id,cls){
+  var s=document.createElementNS(svgNS,'svg');
+  s.setAttribute('class',cls||'ic');
+  var u=document.createElementNS(svgNS,'use');
+  u.setAttribute('href','#'+id);
+  s.appendChild(u);
+  return s;
+}
+function icon(name,cls){return svgUse('ic-'+name,cls||'ic');}
+function logo(cls){return svgUse('py-logo',cls||'ic');}
+function safeIcon(name){return icon(ICON_SET.indexOf(name)>=0?name:'plug');}
+/* ripple-эффект */
+document.addEventListener('pointerdown',function(e){
+  var t=e.target.closest('.py-btn,.py-tbtn,.py-sapp,.py-dicon,.py-chip');
+  if(!t||store.get('fx',true)===false){return;}
+  var r=t.getBoundingClientRect();
+  var rip=h('span',{class:'py-ripple',style:{
+    left:(e.clientX-r.left-r.width/2)+'px',
+    top:(e.clientY-r.top-r.width/2)+'px',
+    width:r.width+'px',height:r.width+'px'}});
+  t.style.position=t.style.position||'relative';
+  t.style.overflow='hidden';
+  t.appendChild(rip);
+  setTimeout(function(){rip.remove();},600);
+});
+
+/* ══════════ [JS-E] ТЕМА ══════════ */
+var theme={
+  apply:function(){
+    var acc=ACCENTS.filter(function(a){return a.id===store.get('accent','blue');})[0]||ACCENTS[0];
+    document.documentElement.style.setProperty('--acc',acc.a);
+    document.documentElement.style.setProperty('--acc2',acc.b);
+    root.classList.toggle('py-anim-none',store.get('fx',true)===false);
+  },
+  setAccent:function(id){store.set('accent',id);this.apply();bus.emit('theme');},
+  setWall:function(id){store.set('wall',id);bus.emit('wall');},
+  setFx:function(on){store.set('fx',!!on);this.apply();}
+};
+function wallCls(){
+  var w=WALLS.filter(function(x){return x.id===store.get('wall','aurora');})[0]||WALLS[0];
+  return w.cls;
+}
+
+/* ══════════ [JS-F] ВИРТУАЛЬНАЯ ФС ══════════ */
+var vfs={
+  key:'vfs',
+  load:function(){
+    var t=store.get(this.key,null);
+    if(!t){t=this.seed();store.set(this.key,t);}
+    return t;
+  },
+  save:function(t){store.set(this.key,t);},
+  seed:function(){
+    return {type:'dir',name:'/',children:[
+      {type:'dir',name:'Документы',children:[
+        {type:'file',name:'readme.txt',content:
+          'Добро пожаловать в PyOS Studio 3.0 «Nebula»!\n\n'+
+          'Виртуальная файловая система хранит всё в localStorage.\n'+
+          '— Двойной клик: открыть.\n'+
+          '— Правый клик: переименовать / удалить.'},
+        {type:'file',name:'заметки.txt',content:'Список дел:\n1. Написать плагин.\n2. Поговорить с Jarvis.\n3. Сменить обои.'}
+      ]},
+      {type:'dir',name:'Проекты',children:[
+        {type:'file',name:'hello.py',content:
+          '# Пример скрипта PyOS\n'+
+          'def greet(name):\n'+
+          '    return f"Привет, {name}!"\n\n'+
+          'print(greet("Разработчик"))\n'},
+        {type:'file',name:'my_plugin.js',content:
+          '// Заготовка плагина. Документация — в Студии плагинов.\n'+
+          'PYOS.plugins.register({\n'+
+          '  id: "my-plugin",\n'+
+          '  name: "Мой плагин",\n'+
+          '  icon: "star",\n'+
+          '  init: function(app){\n'+
+          '    app.body.innerHTML = "<h2 style=\\\'padding:20px\\\'>Плагин работает!</h2>";\n'+
+          '  }\n'+
+          '});\n'}
+      ]}
+    ]};
+  },
+  resolve:function(path){
+    var tree=this.load();
+    if(!path||path==='/'){return {node:tree,parent:null,path:'/'};}
+    var parts=path.split('/').filter(Boolean);
+    var cur=tree,parent=null,acc='';
+    for(var i=0;i<parts.length;i++){
+      if(cur.type!=='dir'){return null;}
+      var next=null;
+      for(var j=0;j<cur.children.length;j++){
+        if(cur.children[j].name===parts[i]){next=cur.children[j];break;}
+      }
+      if(!next){return null;}
+      parent=cur;cur=next;acc+='/'+parts[i];
+    }
+    return {node:cur,parent:parent,path:acc};
+  },
+  list:function(path){
+    var r=this.resolve(path);
+    if(!r||r.node.type!=='dir'){return [];}
+    return r.node.children.slice().sort(function(a,b){
+      if(a.type!==b.type){return a.type==='dir'?-1:1;}
+      return a.name.localeCompare(b.name,'ru');
+    });
+  },
+  write:function(path,name,content){
+    var r=this.resolve(path);
+    if(!r||r.node.type!=='dir'){return false;}
+    for(var i=0;i<r.node.children.length;i++){
+      if(r.node.children[i].name===name){
+        r.node.children[i].content=content;
+        this.save(this.load());return true;
+      }
+    }
+    r.node.children.push({type:'file',name:name,content:content});
+    this.save(this.load());
+    return true;
+  },
+  mkdir:function(path,name){
+    var r=this.resolve(path);
+    if(!r||r.node.type!=='dir'){return false;}
+    var exists=r.node.children.some(function(c){return c.name===name;});
+    if(exists){return false;}
+    r.node.children.push({type:'dir',name:name,children:[]});
+    this.save(this.load());
+    return true;
+  },
+  rename:function(path,oldName,newName){
+    var r=this.resolve(path);
+    if(!r||!newName){return false;}
+    var item=r.node.children.filter(function(c){return c.name===oldName;})[0];
+    if(!item){return false;}
+    var clash=r.node.children.some(function(c){return c.name===newName&&c!==item;});
+    if(clash){return false;}
+    item.name=newName;
+    this.save(this.load());
+    return true;
+  },
+  remove:function(path,name){
+    var r=this.resolve(path);
+    if(!r){return false;}
+    r.node.children=r.node.children.filter(function(c){return c.name!==name;});
+    this.save(this.load());
+    return true;
+  },
+  read:function(path){
+    var r=this.resolve(path);
+    if(!r||r.node.type!=='file'){return null;}
+    return r.node.content;
+  }
+};
+
+/* ══════════ [JS-G] УВЕДОМЛЕНИЯ И КОНТЕКСТНЫЕ МЕНЮ ══════════ */
+var toastBox=h('div',{class:'py-toasts'});
+root.appendChild(toastBox);
+function notify(title,text,iconId){
+  var t=h('div',{class:'py-toast'},
+    h('b',null,icon(iconId||'info'),title),
+    h('p',null,text||''));
+  toastBox.appendChild(t);
+  setTimeout(function(){
+    t.classList.add('bye');
+    setTimeout(function(){t.remove();},320);
+  },4200);
+  t.addEventListener('click',function(){
+    t.classList.add('bye');
+    setTimeout(function(){t.remove();},320);
+  });
+}
+var ctxEl=null;
+function closeCtx(){if(ctxEl){ctxEl.remove();ctxEl=null;}}
+document.addEventListener('pointerdown',function(e){
+  if(ctxEl&&!ctxEl.contains(e.target)){closeCtx();}
+},true);
+function ctxMenu(x,y,items){
+  closeCtx();
+  var m=h('div',{class:'py-ctx'});
+  items.forEach(function(it){
+    if(it==='-'){m.appendChild(h('div',{class:'sep'}));return;}
+    m.appendChild(h('div',{class:'ci'+(it.danger?' danger':''),
+      onclick:function(e){e.stopPropagation();closeCtx();if(it.run){it.run();}}
+    },it.icon?icon(it.icon):null,it.label));
+  });
+  root.appendChild(m);
+  var r=m.getBoundingClientRect();
+  m.style.left=clamp(x,4,innerWidth-r.width-6)+'px';
+  m.style.top=clamp(y,4,innerHeight-r.height-6)+'px';
+  ctxEl=m;
+}
+
+/* ══════════ [JS-H] ОКОННЫЙ МЕНЕДЖЕР ══════════ */
+var deskLayer=null;
+var wm={
+  z:100,
+  wins:{},
+  order:[],
+  create:function(opts){
+    var self=this;
+    var id=opts.id||('w'+Math.random().toString(36).slice(2,9));
+    if(this.wins[id]){
+      if(this.wins[id].minimized){this.restore(id);}
+      this.focus(id);
+      return this.wins[id];
+    }
+    var w=opts.width||640,hh=opts.height||440;
+    var ox=60+(this.order.length%6)*36;
+    var oy=40+(this.order.length%6)*28;
+    var el=h('div',{class:'py-win',style:{
+      width:w+'px',height:hh+'px',
+      left:clamp(ox,10,innerWidth-w-10)+'px',
+      top:clamp(oy,10,innerHeight-hh-90)+'px',
+      zIndex:++this.z}});
+    var tb=h('div',{class:'py-titlebar'},
+      icon(opts.icon||'square','tic'),
+      h('span',{class:'ttl'},opts.title||'Окно'),
+      h('div',{class:'py-wbtn',title:'Свернуть',onclick:function(){self.minimize(id);}},icon('minus')),
+      h('div',{class:'py-wbtn',title:'Развернуть',onclick:function(){self.toggleMax(id);}},icon('square')),
+      h('div',{class:'py-wbtn close',title:'Закрыть',onclick:function(){self.close(id);}},icon('close')));
+    var body=h('div',{class:'py-wbody'});
+    var rz=h('div',{class:'py-resize'});
+    el.append(tb,body,rz);
+    deskLayer.appendChild(el);
+    var handle={
+      id:id,el:el,body:body,
+      title:opts.title,icon:opts.icon||'square',
+      minimized:false,maxed:false,prevRect:null,
+      onClose:opts.onClose||null,
+      setTitle:function(t){this.title=t;$('.ttl',tb).textContent=t;bus.emit('wm');},
+      setIcon:function(i){this.icon=i;tb.replaceChild(safeIcon(i),$('.tic',tb));}
+    };
+    this.wins[id]=handle;
+    this.order.push(id);
+    el.addEventListener('pointerdown',function(){self.focus(id);});
+    /* перетаскивание */
+    var drag=null;
+    tb.addEventListener('pointerdown',function(e){
+      if(e.target.closest('.py-wbtn')||handle.maxed){return;}
+      drag={dx:e.clientX-el.offsetLeft,dy:e.clientY-el.offsetTop};
+      tb.setPointerCapture(e.pointerId);
+      $('.ttl',tb).style.cursor='grabbing';
+    });
+    tb.addEventListener('pointermove',function(e){
+      if(!drag){return;}
+      el.style.left=clamp(e.clientX-drag.dx,-el.offsetWidth+90,innerWidth-90)+'px';
+      el.style.top=clamp(e.clientY-drag.dy,0,innerHeight-110)+'px';
+      snapHint(e.clientX);
+    });
+    tb.addEventListener('pointerup',function(e){
+      if(!drag){return;}
+      drag=null;
+      $('.ttl',tb).style.cursor='grab';
+      var s=consumeSnap();
+      if(s){self.snapTo(id,s);}
+    });
+    /* ресайз */
+    var rs=null;
+    rz.addEventListener('pointerdown',function(e){
+      rs={x:e.clientX,y:e.clientY,w:el.offsetWidth,h:el.offsetHeight};
+      rz.setPointerCapture(e.pointerId);
+      e.stopPropagation();
+    });
+    rz.addEventListener('pointermove',function(e){
+      if(!rs){return;}
+      el.style.width=Math.max(340,rs.w+e.clientX-rs.x)+'px';
+      el.style.height=Math.max(220,rs.h+e.clientY-rs.y)+'px';
+    });
+    rz.addEventListener('pointerup',function(){rs=null;});
+    tb.addEventListener('dblclick',function(e){
+      if(!e.target.closest('.py-wbtn')){self.toggleMax(id);}
+    });
+    this.focus(id);
+    bus.emit('wm');
+    if(opts.init){
+      try{opts.init(body,handle);}
+      catch(err){
+        body.innerHTML='';
+        body.appendChild(h('div',{style:{padding:'20px',color:'var(--err)'}},
+          'Ошибка инициализации: '+err.message));
+      }
+    }
+    return handle;
+  },
+  focus:function(id){
+    var w=this.wins[id];
+    if(!w){return;}
+    w.el.style.zIndex=++this.z;
+    Object.keys(this.wins).forEach(function(k){
+      this.wins[k].el.classList.toggle('focused',k===id);
+    },this);
+  },
+  close:function(id){
+    var w=this.wins[id];
+    if(!w){return;}
+    if(w.onClose){try{w.onClose();}catch(e){}}
+    w.el.classList.add('closing');
+    delete this.wins[id];
+    this.order=this.order.filter(function(x){return x!==id;});
+    setTimeout(function(){w.el.remove();},230);
+    bus.emit('wm');
+  },
+  minimize:function(id){
+    var w=this.wins[id];
+    if(!w){return;}
+    w.minimized=true;
+    w.el.classList.add('mini');
+    setTimeout(function(){w.el.style.display='none';w.el.classList.remove('mini');},250);
+    bus.emit('wm');
+  },
+  restore:function(id){
+    var w=this.wins[id];
+    if(!w){return;}
+    w.minimized=false;
+    w.el.style.display='flex';
+    this.focus(id);
+    bus.emit('wm');
+  },
+  toggleMax:function(id){
+    var w=this.wins[id];
+    if(!w){return;}
+    if(!w.maxed){
+      w.prevRect={l:w.el.style.left,t:w.el.style.top,w:w.el.style.width,h:w.el.style.height};
+      w.el.style.left='0';w.el.style.top='0';
+      w.el.style.width='100%';w.el.style.height='100%';
+      w.el.classList.add('maxed');w.maxed=true;
+    }else{
+      var r=w.prevRect||{l:'80px',t:'60px',w:'640px',h:'440px'};
+      w.el.style.left=r.l;w.el.style.top=r.t;
+      w.el.style.width=r.w;w.el.style.height=r.h;
+      w.el.classList.remove('maxed');w.maxed=false;
+    }
+  },
+  snapTo:function(id,side){
+    var w=this.wins[id];
+    if(!w||side==='max'){return;}
+    var d=deskLayer.getBoundingClientRect();
+    var half=Math.floor(d.width/2);
+    w.el.classList.remove('maxed');w.maxed=false;
+    w.el.style.top='0';
+    w.el.style.height=d.height+'px';
+    w.el.style.left=side==='l'?'0':half+'px';
+    w.el.style.width=half+'px';
+  },
+  closeTop:function(){
+    if(this.order.length){this.close(this.order[this.order.length-1]);return true;}
+    return false;
+  },
+  closeAll:function(){
+    var self=this;
+    Object.keys(this.wins).forEach(function(id){self.close(id);});
+  }
+};
+var snapL=h('div',{class:'py-snap l'});
+var snapR=h('div',{class:'py-snap r'});
+var snapState=null;
+function snapHint(x){
+  if(x<14){snapL.classList.add('on');snapR.classList.remove('on');snapState='l';}
+  else if(x>innerWidth-14){snapR.classList.add('on');snapL.classList.remove('on');snapState='r';}
+  else{snapL.classList.remove('on');snapR.classList.remove('on');snapState=null;}
+}
+function consumeSnap(){
+  var s=snapState;snapState=null;
+  snapL.classList.remove('on');snapR.classList.remove('on');
+  return s;
+}
+
+/* ══════════ [JS-I] РЕЕСТР ПРИЛОЖЕНИЙ ══════════ */
+var apps={};
+function registerApp(def){apps[def.id]=def;bus.emit('apps');}
+function launch(id){
+  var a=apps[id];
+  if(!a){notify('Ошибка','Приложение не найдено: '+id,'close');return;}
+  closeStart();
+  wm.create({
+    id:a.single?'app-'+id:undefined,
+    title:a.name,icon:a.icon,
+    width:a.width,height:a.height,
+    init:a.launch
+  });
+}
+
+/* ══════════ [JS-J] ТЕРМИНАЛ ══════════ */
+var termCommands={
+  help:{desc:'Список команд',run:function(t){
+    t.print('Доступные команды:','info');
+    Object.keys(termCommands).sort().forEach(function(n){
+      t.print('  '+n.padEnd(12)+'— '+termCommands[n].desc,'dim');
+    });
+  }},
+  about:{desc:'О системе',run:function(t){
+    t.print(SYS.name+' '+SYS.version+' (сборка '+SYS.build+')','ok');
+    t.print('Кодовое имя: '+SYS.codename+' · Ядро: '+SYS.kernel,'dim');
+  }},
+  version:{desc:'Версия ядра',run:function(t){t.print(SYS.kernel,'ok');}},
+  neofetch:{desc:'Паспорт системы',run:function(t){
+    var art=['  ▄▄▄▄▄▄▄  ',' █ ▄▄▄▄▄ █ ',' █ █   █ █ ',' █ █▄▄▄█ █ ',' █▄▄▄▄▄▄▄█ ','  PY·OS    '];
+    var info=[
+      store.get('user.name','Пользователь')+'@pyos',
+      '──────────────────────',
+      'ОС:       '+SYS.name+' '+SYS.version,
+      'Ядро:     '+SYS.kernel,
+      'Аптайм:   '+uptimeStr(),
+      'Обои:     '+store.get('wall','aurora'),
+      'Акцент:   '+store.get('accent','blue'),
+      'Окон:     '+Object.keys(wm.wins).length,
+      'Плагинов: '+plugins.list().length
+    ];
+    for(var i=0;i<Math.max(art.length,info.length);i++){
+      t.print((art[i]||'           ')+'   '+(info[i]||''),'info');
+    }
+  }},
+  clear:{desc:'Очистить экран',run:function(t){t.clear();}},
+  time:{desc:'Текущее время',run:function(t){
+    var d=new Date();
+    t.print(fmtDate(d)+' · '+fmtTime(d)+':'+pad2(d.getSeconds()),'ok');
+  }},
+  theme:{desc:'Сменить акцент: theme <blue|green|pink|gold|cyan|violet>',run:function(t,args){
+    var id=(args[0]||'').toLowerCase();
+    if(!ACCENTS.some(function(a){return a.id===id;})){
+      t.print('Цвета: '+ACCENTS.map(function(a){return a.id;}).join(', '),'warn');return;
+    }
+    theme.setAccent(id);
+    t.print('Акцент применён: '+id,'ok');
+  }},
+  wallpaper:{desc:'Сменить обои: wallpaper <aurora|sunset|ocean|matrix|carbon|grid>',run:function(t,args){
+    var id=(args[0]||'').toLowerCase();
+    if(!WALLS.some(function(a){return a.id===id;})){
+      t.print('Обои: '+WALLS.map(function(a){return a.id;}).join(', '),'warn');return;
+    }
+    theme.setWall(id);
+    t.print('Обои применены: '+id,'ok');
+  }},
+  jarvis:{desc:'Jarvis: jarvis <on|off|say текст>',run:function(t,args){
+    var m=(args[0]||'').toLowerCase();
+    if(m==='on'){jarvis.enable(true);t.print('Jarvis включён.','ok');}
+    else if(m==='off'){jarvis.enable(false);t.print('Jarvis отключён.','warn');}
+    else if(m==='say'){t.print('Jarvis: '+jarvis.replyLocal(args.slice(1).join(' ')),'info');}
+    else{t.print('Состояние: '+(store.get('jarvis.on',true)?'включён':'выключен'),'dim');}
+  }},
+  plugins:{desc:'Список плагинов',run:function(t){
+    var list=plugins.list();
+    if(!list.length){t.print('Плагины не установлены.','warn');return;}
+    list.forEach(function(p){
+      t.print('  '+(p.enabled?'[✓] ':'[✗] ')+p.id+' · '+p.name+' v'+(p.version||'1.0'),'dim');
+    });
+  }},
+  echo:{desc:'Вывести текст',run:function(t,args){t.print(args.join(' '),'');}},
+  calc:{desc:'Калькулятор: calc 2+2*2',run:function(t,args){
+    var expr=args.join('');
+    if(!/^[\d\s+\-*/().%]+$/.test(expr)){t.print('Недопустимое выражение.','err');return;}
+    try{t.print('= '+Function('"use strict";return('+expr+')')(),'ok');}
+    catch(e){t.print('Ошибка вычисления.','err');}
+  }},
+  ls:{desc:'Файлы в каталоге: ls [путь]',run:function(t,args){
+    var items=vfs.list(args[0]||'/');
+    if(!items.length){t.print('(пусто)','dim');return;}
+    items.forEach(function(f){t.print('  '+(f.type==='dir'?'[DIR] ':'      ')+f.name,'dim');});
+  }},
+  cat:{desc:'Показать файл: cat /путь/файл',run:function(t,args){
+    var c=vfs.read(args[0]||'');
+    if(c===null){t.print('Файл не найден.','err');return;}
+    c.split('\n').forEach(function(l){t.print(l,'');});
+  }},
+  user:{desc:'Сменить имя: user Имя',run:function(t,args){
+    var n=args.join(' ').trim();
+    if(!n){t.print('Имя: '+store.get('user.name','Пользователь'),'dim');return;}
+    store.set('user.name',n);bus.emit('user');
+    t.print('Имя обновлено: '+n,'ok');
+  }},
+  reset:{desc:'Полный сброс системы',run:function(t){
+    t.print('Сброс через 2 секунды…','warn');
+    setTimeout(systemReset,2000);
+  }},
+  shutdown:{desc:'Выключить систему',run:function(t){
+    t.print('Выключение…','warn');
+    setTimeout(powerOff,900);
+  }},
+  reboot:{desc:'Перезагрузка',run:function(t){
+    t.print('Перезагрузка…','warn');
+    setTimeout(systemReboot,900);
+  }}
+};
+registerApp({
+  id:'terminal',name:'Терминал',icon:'term',
+  width:680,height:430,single:true,
+  launch:function(body){
+    body.innerHTML='';
+    var term=h('div',{class:'py-term'});
+    body.appendChild(term);
+    var inRow=h('div',{class:'py-term-in'},
+      h('span',{class:'ps'},'pyos $'),
+      h('input',{placeholder:'введите help…',autocomplete:'off'}));
+    term.appendChild(inRow);
+    var api={
+      print:function(text,cls){
+        term.insertBefore(h('div',{class:'ln'+(cls?' '+cls:'')},text),inRow);
+        term.scrollTop=term.scrollHeight;
+      },
+      clear:function(){$$('.ln',term).forEach(function(n){n.remove();});}
+    };
+    var input=$('input',inRow);
+    var history=[],hIdx=-1;
+    api.print(SYS.name+' '+SYS.version+' · терминал','info');
+    api.print('Команды: help · neofetch · plugins · jarvis say привет','dim');
+    input.addEventListener('keydown',function(e){
+      if(e.key==='ArrowUp'){
+        e.preventDefault();
+        if(hIdx<history.length-1){hIdx++;input.value=history[history.length-1-hIdx];}
+        return;
+      }
+      if(e.key==='ArrowDown'){
+        e.preventDefault();
+        if(hIdx>0){hIdx--;input.value=history[history.length-1-hIdx];}
+        else{hIdx=-1;input.value='';}
+        return;
+      }
+      if(e.key!=='Enter'){return;}
+      var raw=input.value.trim();
+      input.value='';
+      if(!raw){return;}
+      history.push(raw);hIdx=-1;
+      api.print('pyos $ '+raw,'dim');
+      var parts=raw.split(/\s+/);
+      var cmd=parts[0].toLowerCase();
+      var c=termCommands[cmd];
+      if(!c){api.print('Неизвестная команда: '+cmd+'. Введите help.','err');return;}
+      try{c.run(api,parts.slice(1));}
+      catch(err){api.print('Ошибка: '+err.message,'err');}
+    });
+    body.addEventListener('click',function(){input.focus();});
+    setTimeout(function(){input.focus();},120);
+  }
+});
+
+/* ══════════ [JS-K] ФАЙЛЫ ══════════ */
+function openInEditor(path){
+  wm.close('app-editor');
+  wm.create({id:'app-editor',title:'Редактор',icon:'code',
+    width:760,height:500,
+    init:function(body,win){editorApp(body,win,path);}});
+}
+registerApp({
+  id:'files',name:'Файлы',icon:'files',
+  width:720,height:480,single:true,
+  launch:function(body,win){
+    var cwd='/';
+    body.innerHTML='';
+    var app=h('div',{class:'py-app'});
+    var crumbs=h('div',{class:'py-files-crumbs'});
+    var grid=h('div',{class:'py-files-grid'});
+    var status=h('div',{class:'py-status'});
+    function render(){
+      crumbs.innerHTML='';
+      var parts=cwd.split('/').filter(Boolean);
+      crumbs.appendChild(h('span',{class:'py-crumb'+(cwd==='/'?' cur':''),
+        onclick:function(){cwd='/';render();}},'⌂ Система'));
+      var acc='';
+      parts.forEach(function(p,i){
+        acc+='/'+p;
+        var isCur=i===parts.length-1;
+        (function(path){
+          crumbs.appendChild(h('span',{class:'py-crumb'+(isCur?' cur':''),
+            onclick:function(){cwd=path;render();}},p));
+        })(acc);
+      });
+      grid.innerHTML='';
+      var items=vfs.list(cwd);
+      items.forEach(function(f,idx){
+        var ic=f.type==='dir'?'folder':(/\.py$/.test(f.name)?'pyfile':'file');
+        var item=h('div',{class:'py-fitem',style:{animationDelay:(idx*0.02)+'s'}},
+          icon(ic),h('span',null,f.name),
+          h('em',null,f.type==='dir'?'папка':fmtBytes((f.content||'').length)));
+        item.addEventListener('dblclick',function(){
+          if(f.type==='dir'){cwd=cwd==='/'?'/'+f.name:cwd+'/'+f.name;render();}
+          else{openInEditor((cwd==='/'?'':cwd)+'/'+f.name);}
+        });
+        item.addEventListener('contextmenu',function(e){
+          e.preventDefault();
+          ctxMenu(e.clientX,e.clientY,[
+            {label:'Открыть',icon:'play',run:function(){
+              if(f.type==='dir'){cwd=cwd==='/'?'/'+f.name:cwd+'/'+f.name;render();}
+              else{openInEditor((cwd==='/'?'':cwd)+'/'+f.name);}
+            }},
+            {label:'Переименовать',icon:'edit',run:function(){
+              var nn=prompt('Новое имя:',f.name);
+              if(nn&&vfs.rename(cwd,f.name,nn.trim())){render();}
+            }},
+            '-',
+            {label:'Удалить',icon:'trash',danger:true,run:function(){
+              vfs.remove(cwd,f.name);
+              notify('Файлы','Удалено: '+f.name,'trash');
+              render();
+            }}]);
+        });
+        grid.appendChild(item);
+      });
+      if(!items.length){
+        grid.appendChild(h('div',{style:{gridColumn:'1/-1',textAlign:'center',
+          color:'var(--mut)',padding:'40px 0',fontSize:'13px'}},'Каталог пуст.'));
+      }
+      var dirs=items.filter(function(x){return x.type==='dir';}).length;
+      status.textContent='Объектов: '+items.length+' · Папок: '+dirs+' · Файлов: '+(items.length-dirs);
+      win.setTitle('Файлы — '+(cwd==='/'?'Система':cwd));
+    }
+    app.appendChild(h('div',{class:'py-toolbar'},
+      h('button',{class:'py-tbtn',onclick:function(){
+        var name=prompt('Имя новой папки:','Новая папка');
+        if(name&&vfs.mkdir(cwd,name.trim())){notify('Файлы','Папка создана','files');}
+        render();
+      }},icon('plus'),'Папка'),
+      h('button',{class:'py-tbtn',onclick:function(){
+        var name=prompt('Имя нового файла (.txt/.py):','новый.txt');
+        if(name){vfs.write(cwd,name.trim(),'');render();}
+      }},icon('plus'),'Файл'),
+      h('button',{class:'py-tbtn',onclick:render},icon('refresh'),'Обновить'),
+      crumbs));
+    app.append(grid,status);
+    body.appendChild(app);
+    render();
+  }
+});
+
+/* ══════════ [JS-L] РЕДАКТОР ══════════ */
+function editorApp(body,win,openPath){
+  var path=openPath||null;
+  body.innerHTML='';
+  var app=h('div',{class:'py-app'});
+  var ta=h('textarea',{spellcheck:'false',placeholder:'// новый код…'});
+  var gutter=h('div',{class:'py-ed-gutter'});
+  var st=h('div',{class:'py-status'});
+  function lines(){
+    var n=ta.value.split('\n').length,s='';
+    for(var i=1;i<=n;i++){s+=i+'\n';}
+    gutter.textContent=s;
+  }
+  function stat(){
+    st.textContent=(path||'новый файл')+'   ·   '+ta.value.length+
+      ' симв.   ·   '+ta.value.split('\n').length+' строк';
+  }
+  function save(){
+    if(!path){saveAs();return;}
+    var parts=path.split('/');
+    var name=parts.pop();
+    vfs.write(parts.join('/')||'/',name,ta.value);
+    notify('Редактор','Сохранено: '+path,'save');
+    stat();
+  }
+  function saveAs(){
+    var p=prompt('Путь (например /Проекты/script.py):',path||'/Проекты/файл.py');
+    if(!p){return;}
+    if(p.indexOf('/')!==0){p='/'+p;}
+    var parts=p.split('/');
+    var name=parts.pop();
+    var dir=parts.join('/')||'/';
+    if(!vfs.resolve(dir)){notify('Редактор','Каталог не найден: '+dir,'close');return;}
+    vfs.write(dir,name,ta.value);
+    path=p;
+    win.setTitle('Редактор — '+name);
+    stat();
+    notify('Редактор','Сохранено: '+p,'save');
+  }
+  app.appendChild(h('div',{class:'py-toolbar'},
+    h('button',{class:'py-tbtn acc',onclick:save},icon('save'),'Сохранить'),
+    h('button',{class:'py-tbtn',onclick:saveAs},icon('plus'),'Сохранить как…')));
+  app.appendChild(h('div',{class:'py-ed'},gutter,ta));
+  app.appendChild(st);
+  body.appendChild(app);
+  ta.addEventListener('input',function(){lines();stat();});
+  ta.addEventListener('scroll',function(){gutter.scrollTop=ta.scrollTop;});
+  ta.addEventListener('keydown',function(e){
+    if(e.key==='Tab'){
+      e.preventDefault();
+      var s=ta.selectionStart;
+      ta.value=ta.value.slice(0,s)+'    '+ta.value.slice(ta.selectionEnd);
+      ta.selectionStart=ta.selectionEnd=s+4;
+      lines();
+    }
+  });
+  if(path){
+    var c=vfs.read(path);
+    if(c!==null){ta.value=c;}
+    win.setTitle('Редактор — '+path.split('/').pop());
+  }
+  lines();stat();
+  setTimeout(function(){ta.focus();},120);
+}
+registerApp({
+  id:'editor',name:'Редактор',icon:'code',
+  width:760,height:500,single:true,
+  launch:function(body,win){editorApp(body,win,null);}
+});
+
+/* ══════════ [JS-M] КАЛЬКУЛЯТОР ══════════ */
+registerApp({
+  id:'calc',name:'Калькулятор',icon:'calc',
+  width:360,height:520,single:true,
+  launch:function(body){
+    body.innerHTML='';
+    var expr='';
+    var disp=h('div',{class:'py-calc-disp'},
+      h('div',{class:'ex'},'\u00a0'),
+      h('div',{class:'res'},'0'));
+    var grid=h('div',{class:'py-calc-grid'});
+    function refresh(){
+      $('.ex',disp).textContent=expr||'\u00a0';
+      var out=expr;
+      try{
+        if(expr){
+          out=String(Function('"use strict";return('+expr+')')());
+          if(!isFinite(Function('"use strict";return('+expr+')')())){out='∞';}
+        }
+      }catch(e){out='…';}
+      $('.res',disp).textContent=out||'0';
+    }
+    function press(k){
+      if(k==='C'){expr='';}
+      else if(k==='⌫'){expr=expr.slice(0,-1);}
+      else if(k==='='){
+        try{
+          var v=Function('"use strict";return('+expr+')')();
+          expr=isFinite(v)?String(v):'';
+        }catch(e){expr='';}
+      }else{expr+=k;}
+      refresh();
+    }
+    var keys=['C','⌫','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','0','.','(',')','−/+','='];
+    keys.forEach(function(k,i){
+      var cls='py-calc-k';
+      if('÷×−+%⌫C'.indexOf(k)>=0){cls+=' op';}
+      if(k==='='){cls+=' eq';grid.appendChild(
+        h('button',{class:cls,style:{gridColumn:'span 2'},onclick:function(){press('=');}},'='));return;}
+      if(k==='−/+'){grid.appendChild(h('button',{class:cls,onclick:function(){
+        if(expr){expr='('+expr+')*(-1)';refresh();}
+      }},k));return;}
+      var sym=k==='÷'?'/':k==='×'?'*':k==='−'?'-':k;
+      grid.appendChild(h('button',{class:cls,style:{animationDelay:(i*0.02)+'s'},
+        onclick:function(){press(k==='⌫'||k==='C'?k:sym);}},k));
+    });
+    body.appendChild(h('div',{class:'py-calc'},disp,grid));
+    refresh();
+  }
+});
+
+/* ══════════ [JS-N] ЗАМЕТКИ ══════════ */
+registerApp({
+  id:'notes',name:'Заметки',icon:'notes',
+  width:560,height:460,single:true,
+  launch:function(body){
+    body.innerHTML='';
+    if(!vfs.resolve('/Заметки')){vfs.mkdir('/','Заметки');}
+    var app=h('div',{class:'py-app'});
+    var list=h('div',{style:{width:'190px',borderRight:'1px solid var(--line)',
+      overflowY:'auto',padding:'10px',flex:'none',background:'rgba(0,0,0,.14)'}});
+    var ta=h('textarea',{style:{flex:'1',background:'transparent',border:'none',
+      outline:'none',resize:'none',color:'var(--txt)',fontSize:'14px',
+      lineHeight:'1.7',padding:'18px'}});
+    var cur=null;
+    function saveCur(){
+      if(cur){vfs.write('/Заметки',cur,ta.value);}
+    }
+    function renderList(){
+      list.innerHTML='';
+      var items=vfs.list('/Заметки');
+      items.forEach(function(f){
+        var b=h('div',{class:'py-doc-link'+(f.name===cur?' on':''),
+          style:{whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},
+          f.name.replace(/\.txt$/,''));
+        b.addEventListener('click',function(){
+          saveCur();
+          cur=f.name;
+          ta.value=vfs.read('/Заметки/'+f.name)||'';
+          renderList();
+        });
+        list.appendChild(b);
+      });
+      if(!items.length){
+        list.appendChild(h('div',{style:{color:'var(--mut)',fontSize:'12px',padding:'8px'}},'Пусто'));
+      }
+    }
+    function newNote(){
+      saveCur();
+      var n='заметка-'+String(Date.now()).slice(-5)+'.txt';
+      vfs.write('/Заметки',n,'');
+      cur=n;ta.value='';
+      renderList();
+      ta.focus();
+    }
+    ta.addEventListener('input',function(){saveCur();});
+    app.appendChild(h('div',{class:'py-toolbar'},
+      h('button',{class:'py-tbtn acc',onclick:newNote},icon('plus'),'Новая'),
+      h('button',{class:'py-tbtn',onclick:function(){
+        if(cur&&confirm('Удалить «'+cur+'»?')){
+          vfs.remove('/Заметки',cur);cur=null;ta.value='';renderList();
+        }
+      }},icon('trash'),'Удалить')));
+    app.appendChild(h('div',{style:{flex:'1',display:'flex',minHeight:'0'}},list,ta));
+    body.appendChild(app);
+    renderList();
+  }
+});
+
+/* ══════════ [JS-O] НАСТРОЙКИ ══════════ */
+registerApp({
+  id:'settings',name:'Настройки',icon:'gear',
+  width:800,height:540,single:true,
+  launch:function(body){
+    body.innerHTML='';
+    var app=h('div',{class:'py-app'});
+    var nav=h('div',{class:'py-set-nav'});
+    var pane=h('div',{class:'py-set-body'});
+    app.appendChild(h('div',{class:'py-set'},nav,pane));
+    body.appendChild(app);
+    var sections=[
+      {id:'perso',name:'Персонализация',icon:'palette'},
+      {id:'jarvis',name:'Jarvis и голос',icon:'mic'},
+      {id:'plugins',name:'Плагины',icon:'plug'},
+      {id:'system',name:'Система',icon:'gear'}];
+    var cur='perso';
+    sections.forEach(function(s){
+      nav.appendChild(h('div',{class:'ni'+(s.id===cur?' on':''),'data-sid':s.id,
+        onclick:function(){
+          cur=s.id;
+          $$('.ni',nav).forEach(function(n){n.classList.toggle('on',n.getAttribute('data-sid')===cur);});
+          render();
+        }},icon(s.icon),s.name));
+    });
+    function toggleRow(title,desc,on,cb){
+      var sw=h('div',{class:'py-sw'+(on?' on':'')});
+      var row=h('div',{class:'py-toggle'},
+        h('div',{class:'tl'},h('b',null,title),h('i',null,desc)),sw);
+      row.addEventListener('click',function(){
+        sw.classList.toggle('on');
+        cb(sw.classList.contains('on'));
+      });
+      return row;
+    }
+    function render(){
+      pane.innerHTML='';
+      if(cur==='perso'){
+        pane.appendChild(h('h2',null,'Персонализация'));
+        pane.appendChild(h('div',{class:'dsc'},'Акцент, обои и анимации.'));
+        pane.appendChild(h('h3',null,'Акцентный цвет'));
+        var g=h('div',{class:'py-choice'});
+        ACCENTS.forEach(function(a,i){
+          var card=h('div',{class:'py-card'+(store.get('accent')===a.id?' sel':''),
+            style:{animationDelay:(i*0.05)+'s'}},
+            h('div',{class:'py-swatch',style:{background:'linear-gradient(135deg,'+a.a+','+a.b+')'}}),
+            h('b',null,a.name),h('i',null,a.a+' → '+a.b));
+          card.addEventListener('click',function(){theme.setAccent(a.id);render();});
+          g.appendChild(card);
+        });
+        pane.appendChild(g);
+        pane.appendChild(h('h3',null,'Обои'));
+        var wg=h('div',{class:'py-choice'});
+        WALLS.forEach(function(w,i){
+          var card=h('div',{class:'py-card'+(store.get('wall')===w.id?' sel':''),
+            style:{animationDelay:(i*0.05)+'s'}},
+            h('div',{class:'py-wprev '+w.cls}),h('b',null,w.name));
+          card.addEventListener('click',function(){theme.setWall(w.id);render();});
+          wg.appendChild(card);
+        });
+        pane.appendChild(wg);
+        pane.appendChild(h('h3',null,'Эффекты'));
+        pane.appendChild(toggleRow('Анимации интерфейса',
+          'Переходы, свечение, рябь на кнопках',
+          store.get('fx',true),function(on){theme.setFx(on);}));
+      }
+      if(cur==='jarvis'){
+        pane.appendChild(h('h2',null,'Jarvis'));
+        pane.appendChild(h('div',{class:'dsc'},
+          'Голосовой ассистент уровня системы. Команды — локально, свободные вопросы — Gemini (нужен бесплатный ключ Google AI Studio).'));
+        pane.appendChild(toggleRow('Jarvis включён','Орб, панель диалога, распознавание речи',
+          store.get('jarvis.on',true),function(on){jarvis.enable(on);}));
+        pane.appendChild(toggleRow('Озвучивать ответы','Синтез речи браузера',
+          store.get('jarvis.speak',true),function(on){store.set('jarvis.speak',on);}));
+        pane.appendChild(h('h3',null,'Речь'));
+        var rate=h('input',{class:'py-input',type:'range',min:'0.6',max:'1.6',step:'0.1',
+          value:String(store.get('jarvis.rate',1))});
+        rate.addEventListener('input',function(){store.set('jarvis.rate',parseFloat(rate.value));});
+        pane.appendChild(h('div',{class:'py-field'},h('label',null,'Скорость речи'),rate));
+        pane.appendChild(h('h3',null,'Gemini API'));
+        var key=h('input',{class:'py-input',type:'password',
+          placeholder:'AIza… (ключ Google AI Studio)',value:store.get('jarvis.key','')});
+        key.addEventListener('change',function(){
+          store.set('jarvis.key',key.value.trim());
+          notify('Jarvis','Ключ сохранён локально','mic');
+          updateMicUI(false);
+        });
+        pane.appendChild(h('div',{class:'py-field'},h('label',null,'API-ключ Gemini'),key));
+        var tb=h('button',{class:'py-tbtn acc'},icon('play'),'Проверить соединение');
+        tb.addEventListener('click',function(){jarvis.testGemini();});
+        pane.appendChild(tb);
+        pane.appendChild(h('div',{class:'py-note'},
+          'Ключ хранится только в этом браузере. Микрофон требует HTTPS и разрешения.'));
+      }
+      if(cur==='plugins'){
+        pane.appendChild(h('h2',null,'Плагины'));
+        pane.appendChild(h('div',{class:'dsc'},'Включение и удаление. Разработка — в Студии плагинов.'));
+        var list=plugins.list();
+        if(!list.length){pane.appendChild(h('div',{class:'py-note'},'Плагинов пока нет.'));}
+        list.forEach(function(p){
+          var sw=h('div',{class:'py-sw'+(p.enabled?' on':'')});
+          var row=h('div',{class:'py-toggle'},
+            h('div',{class:'tl'},h('b',null,p.name),
+              h('i',null,p.id+' · v'+(p.version||'1.0'))),sw);
+          row.addEventListener('click',function(){
+            plugins.setEnabled(p.id,!p.enabled);render();
+          });
+          pane.appendChild(row);
+        });
+        var open=h('button',{class:'py-tbtn acc',style:{marginTop:'10px'}},
+          icon('plug'),'Открыть Студию плагинов');
+        open.addEventListener('click',function(){launch('plugin-studio');});
+        pane.appendChild(open);
+      }
+      if(cur==='system'){
+        pane.appendChild(h('h2',null,'Система'));
+        pane.appendChild(h('div',{class:'dsc'},SYS.name+' '+SYS.version+' · '+SYS.build));
+        var name=h('input',{class:'py-input',value:store.get('user.name','Пользователь')});
+        name.addEventListener('change',function(){
+          store.set('user.name',name.value.trim()||'Пользователь');
+          bus.emit('user');
+        });
+        pane.appendChild(h('div',{class:'py-field'},h('label',null,'Имя пользователя'),name));
+        var btns=h('div',{style:{display:'flex',gap:'8px',flexWrap:'wrap',marginTop:'14px'}});
+        function mk(ic,label,fn){
+          var b=h('button',{class:'py-tbtn'},icon(ic),label);
+          b.addEventListener('click',fn);
+          btns.appendChild(b);
+        }
+        mk('info','О системе',function(){launch('about');});
+        mk('restart','Перезагрузка',systemReboot);
+        mk('power','Выключить',powerOff);
+        var rb=h('button',{class:'py-tbtn',style:{color:'var(--err)'}},icon('trash'),'Сброс системы');
+        rb.addEventListener('click',function(){
+          if(confirm('Полный сброс: настройки, файлы и плагины будут удалены. Продолжить?')){systemReset();}
+        });
+        btns.appendChild(rb);
+        pane.appendChild(btns);
+      }
+    }
+    render();
+  }
+});
+
+/* ══════════ [JS-P] О СИСТЕМЕ ══════════ */
+var bootTime=Date.now();
+function uptimeStr(){
+  var s=Math.floor((Date.now()-bootTime)/1000);
+  var m=Math.floor(s/60),hh=Math.floor(m/60);
+  return (hh?hh+' ч ':'')+(m%60)+' мин '+(s%60)+' с';
+}
+registerApp({
+  id:'about',name:'О системе',icon:'info',
+  width:560,height:560,single:true,
+  launch:function(body){
+    body.innerHTML='';
+    var box=h('div',{class:'py-about'});
+    box.appendChild(logo());
+    box.appendChild(h('h1',null,SYS.name));
+    box.appendChild(h('div',{class:'ver'},
+      'Версия '+SYS.version+' · сборка '+SYS.build+' · кодовое имя «'+SYS.codename+'»'));
+    box.appendChild(h('div',{class:'badge'},'Ядро '+SYS.kernel+' · стабильный канал'));
+    var specs=h('div',{class:'py-specs'});
+    var rows=[
+      ['Пользователь',store.get('user.name','Пользователь')],
+      ['Аптайм сессии',uptimeStr()],
+      ['Платформа',navigator.platform||'—'],
+      ['Браузер',(navigator.userAgent.match(/(Firefox|Chrome|Safari|Edg)\/[\d.]+/)||['—'])[0]],
+      ['Экран',screen.width+'×'+screen.height],
+      ['Язык',navigator.language||'—'],
+      ['Окон открыто',String(Object.keys(wm.wins).length)],
+      ['Плагинов',String(plugins.list().length)],
+      ['Хранилище',fmtBytes(JSON.stringify(localStorage).length)]];
+    rows.forEach(function(r,i){
+      specs.appendChild(h('div',{class:'py-spec',style:{animationDelay:(i*0.06)+'s'}},
+        h('b',null,r[0]),h('span',null,r[1])));
+    });
+    box.appendChild(specs);
+    body.appendChild(box);
+  }
+});
+
+/* ══════════ [JS-Q] ПЛАГИНЫ + ДОКУМЕНТАЦИЯ ══════════ */
+var plugins={
+  registry:{},
+  list:function(){return store.get('plugins.list',[]);},
+  saveList:function(a){store.set('plugins.list',a);},
+  getCode:function(id){return store.get('plugins.code.'+id,'');},
+  setCode:function(id,c){store.set('plugins.code.'+id,c);},
+  remove:function(id){
+    this.saveList(this.list().filter(function(p){return p.id!==id;}));
+    store.del('plugins.code.'+id);
+    delete this.registry[id];
+    delete apps['plug-'+id];
+    bus.emit('apps');
+  },
+  setEnabled:function(id,on){
+    var arr=this.list();
+    arr.forEach(function(p){if(p.id===id){p.enabled=on;}});
+    this.saveList(arr);
+    if(on){this.loadOne(id);}
+    else{
+      delete apps['plug-'+id];
+      wm.close('app-plug-'+id);
+      bus.emit('apps');
+    }
+  },
+  loadOne:function(id){
+    var meta=this.list().filter(function(p){return p.id===id;})[0];
+    if(!meta||!meta.enabled){return;}
+    var code=this.getCode(id);
+    if(!code){return;}
+    try{
+      var fn=new Function('PYOS','window','document','"use strict";\n'+code+'\n');
+      fn(pluginAPI,window,document);
+    }catch(e){
+      console.error('[PYOS plugin]',id,e);
+      notify('Плагины','Ошибка загрузки «'+(meta.name||id)+'»: '+e.message,'plug');
+    }
+  },
+  loadAll:function(){
+    var self=this;
+    this.list().forEach(function(p){if(p.enabled){self.loadOne(p.id);}});
+  }
+};
+var pluginAPI={
+  version:SYS.version,
+  plugins:{
+    register:function(def){
+      if(!def||!def.id||!def.name){throw new Error('Плагин обязан передать id и name');}
+      var meta={id:def.id,name:def.name,version:def.version||'1.0',
+        icon:def.icon||'plug',author:def.author||'—',enabled:true};
+      var arr=plugins.list().filter(function(p){return p.id!==def.id;});
+      arr.push(meta);
+      plugins.saveList(arr);
+      plugins.registry[def.id]=def;
+      registerApp({
+        id:'plug-'+def.id,name:def.name,
+        icon:safeIconName(def.icon),
+        width:def.width||600,height:def.height||420,single:true,
+        launch:function(body,win){
+          body.innerHTML='';
+          var holder=h('div',{class:'py-app'});
+          body.appendChild(holder);
+          try{
+            if(def.init){def.init({body:holder,window:win,title:meta.name});}
+          }catch(e){
+            holder.appendChild(h('div',{style:{padding:'18px',color:'var(--err)'}},
+              'Ошибка плагина: '+e.message));
+          }
+        }});
+      bus.emit('apps');
+    }},
+  store:store,notify:notify,launch:launch,theme:theme,vfs:vfs,bus:bus,
+  jarvis:{
+    addCommand:function(re,fn){jarvis.custom.push({re:re,fn:fn});},
+    say:function(t){jarvis.say(t);}
+  }
+};
+function safeIconName(n){return ICON_SET.indexOf(n)>=0?n:'plug';}
+/* ── документация ── */
+var DOCS=[
+{cat:'Старт',id:'intro',title:'Введение',html:
+'<h2>Студия плагинов PyOS</h2>'+
+'<p class="lead">Плагины — это приложения внутри PyOS. Каждый получает собственное окно в меню «Пуск», доступ к UI-киту системы и хранится в браузере пользователя.</p>'+
+'<h3>Как это работает</h3>'+
+'<p>Код плагина выполняется в общем контексте страницы. Система передаёт ему объект <code>PYOS</code> — единственную официальную точку входа. Всё, что не описано здесь, считается внутренним и может меняться.</p>'+
+'<h3>Жизненный цикл</h3>'+
+'<ul>'+
+'<li><b>Регистрация</b> — плагин вызывает <code>PYOS.plugins.register(manifest)</code>;</li>'+
+'<li><b>Появление</b> — система создаёт ярлык в меню «Пуск» и на рабочем столе;</li>'+
+'<li><b>Запуск</b> — при клике создаётся окно и вызывается <code>init(app)</code>;</li>'+
+'<li><b>Отключение</b> — тумблер в Настройках → Плагины убирает ярлык и закрывает окно.</li>'+
+'</ul>'+
+'<h3>Быстрый старт</h3>'+
+'<pre>PYOS.plugins.register({\n  id: "counter",\n  name: "Счётчик",\n  icon: "star",\n  init: function(app){\n    var n = 0;\n    app.body.innerHTML =\n      "&lt;div style=\'padding:30px\'&gt;" +\n      "&lt;h2 id=\'cnt\'&gt;0&lt;/h2&gt;" +\n      "&lt;button id=\'btn\' class=\'py-btn\'&gt;+1&lt;/button&gt;" +\n      "&lt;/div&gt;";\n    app.body.querySelector("#btn").onclick = function(){\n      app.body.querySelector("#cnt").textContent = ++n;\n    };\n  }\n});</pre>'+
+'<p>Вставьте код во вкладке «Редактор», нажмите «Запустить» — приложение появится в меню «Пуск».</p>'},
+{cat:'Старт',id:'manifest',title:'Манифест плагина',html:
+'<h2>Манифест плагина</h2>'+
+'<p class="lead">Объект для <code>PYOS.plugins.register()</code>.</p>'+
+'<table>'+
+'<tr><th>Поле</th><th>Тип</th><th>Обязательно</th><th>Описание</th></tr>'+
+'<tr><td><code>id</code></td><td>string</td><td>да</td><td>Уникальный латинский идентификатор.</td></tr>'+
+'<tr><td><code>name</code></td><td>string</td><td>да</td><td>Имя в меню «Пуск» и заголовке окна.</td></tr>'+
+'<tr><td><code>version</code></td><td>string</td><td>нет</td><td>По умолчанию «1.0».</td></tr>'+
+'<tr><td><code>icon</code></td><td>string</td><td>нет</td><td>Имя системной иконки: term, files, code, calc, notes, gear, info, plug, mic, star, doc, palette, wave, user, save, play. Неизвестное заменяется на «plug».</td></tr>'+
+'<tr><td><code>author</code></td><td>string</td><td>нет</td><td>Имя автора.</td></tr>'+
+'<tr><td><code>width / height</code></td><td>number</td><td>нет</td><td>Стартовый размер окна (600×420 по умолчанию).</td></tr>'+
+'<tr><td><code>init(app)</code></td><td>function</td><td>да</td><td>Вызывается при каждом открытии окна.</td></tr>'+
+'</table>'+
+'<h3>Правила id</h3>'+
+'<ul>'+
+'<li>только латиница, цифры и дефис;</li>'+
+'<li>не совпадать со встроенными: terminal, files, editor, calc, notes, settings, about, plugin-studio;</li>'+
+'<li>повторная регистрация с тем же id заменяет старую версию.</li>'+
+'</ul>'},
+{cat:'Старт',id:'app-obj',title:'Объект app',html:
+'<h2>Объект app в init()</h2>'+
+'<table>'+
+'<tr><th>Свойство</th><th>Описание</th></tr>'+
+'<tr><td><code>app.body</code></td><td>DOM-элемент содержимого окна. Уже очищен перед вызовом init.</td></tr>'+
+'<tr><td><code>app.window</code></td><td>Дескриптор окна: <code>setTitle(t)</code>, <code>setIcon(name)</code>.</td></tr>'+
+'<tr><td><code>app.title</code></td><td>Имя плагина из манифеста.</td></tr>'+
+'</table>'+
+'<h3>Стилизация</h3>'+
+'<p>Доступны системные CSS-классы: <code>py-btn</code>, <code>py-tbtn</code>, <code>py-card</code>, <code>py-field</code>, <code>py-input</code>, <code>py-toggle</code>, <code>py-note</code>. Цвета — через переменные <code>var(--acc)</code>, <code>var(--txt)</code>, <code>var(--mut)</code>, <code>var(--line)</code>.</p>'+
+'<pre>app.body.innerHTML =\n  "&lt;div style=\'padding:20px;color:var(--txt)\'&gt;" +\n  "&lt;button class=\'py-btn\'&gt;Кнопка&lt;/button&gt;&lt;/div&gt;";</pre>'},
+{cat:'API',id:'api-store',title:'PYOS.store',html:
+'<h2>PYOS.store — хранилище</h2>'+
+'<p class="lead">Обёртка над localStorage с JSON-сериализацией.</p>'+
+'<pre>PYOS.store.set("mykey", {a: 1});\nvar v = PYOS.store.get("mykey");   // {a:1}\nvar d = PYOS.store.get("нет", 42); // 42\nPYOS.store.del("mykey");</pre>'+
+'<h3>Правила</h3>'+
+'<ul>'+
+'<li>Начинайте ключи со своего префикса («counter.»), чтобы не пересечься с другими плагинами;</li>'+
+'<li>Лимит localStorage ≈ 5 МБ, бинарники не храните;</li>'+
+'<li>Запись синхронная — не дёргайте в горячих циклах.</li>'+
+'</ul>'},
+{cat:'API',id:'api-notify',title:'PYOS.notify',html:
+'<h2>PYOS.notify — уведомления</h2>'+
+'<pre>PYOS.notify("Заголовок", "Текст", "star");</pre>'+
+'<table>'+
+'<tr><th>Аргумент</th><th>Описание</th></tr>'+
+'<tr><td>title</td><td>Жирная строка тоста.</td></tr>'+
+'<tr><td>text</td><td>Основной текст (необязательно).</td></tr>'+
+'<tr><td>iconId</td><td>Имя иконки: info, star, plug, mic, save, trash, close (необязательно).</td></tr>'+
+'</table>'+
+'<p>Тост живёт 4 секунды и закрывается по клику.</p>'},
+{cat:'API',id:'api-vfs',title:'PYOS.vfs — файлы',html:
+'<h2>PYOS.vfs — виртуальная файловая система</h2>'+
+'<pre>PYOS.vfs.list("/Проекты");\nPYOS.vfs.read("/Проекты/hello.py");\nPYOS.vfs.write("/Проекты", "a.txt", "текст");\nPYOS.vfs.mkdir("/", "Новая папка");\nPYOS.vfs.rename("/", "a.txt", "b.txt");\nPYOS.vfs.remove("/", "b.txt");\nPYOS.vfs.resolve("/Проекты");</pre>'+
+'<h3>Пути</h3>'+
+'<ul>'+
+'<li>всегда начинаются с «/»;</li>'+
+'<li>каталоги должны существовать до записи;</li>'+
+'<li>это та же ФС, что в приложении «Файлы».</li>'+
+'</ul>'},
+{cat:'API',id:'api-bus',title:'PYOS.bus — события',html:
+'<h2>PYOS.bus — шина событий</h2>'+
+'<pre>var off = PYOS.bus.on("wall", function(){\n  PYOS.notify("Обои", "Пользователь сменил обои");\n});\nPYOS.bus.emit("my-event", {data: 1});\nPYOS.bus.off("wall", off);</pre>'+
+'<h3>Системные события</h3>'+
+'<table>'+
+'<tr><th>Событие</th><th>Когда</th></tr>'+
+'<tr><td><code>theme</code></td><td>сменился акцент</td></tr>'+
+'<tr><td><code>wall</code></td><td>сменились обои</td></tr>'+
+'<tr><td><code>apps</code></td><td>изменился реестр приложений</td></tr>'+
+'<tr><td><code>wm</code></td><td>открыто/закрыто/свёрнуто окно</td></tr>'+
+'<tr><td><code>user</code></td><td>сменилось имя пользователя</td></tr>'+
+'<tr><td><code>jarvis</code></td><td>Jarvis включён/выключен</td></tr>'+
+'</table>'},
+{cat:'API',id:'api-jarvis',title:'PYOS.jarvis',html:
+'<h2>PYOS.jarvis — голос и команды</h2>'+
+'<pre>PYOS.jarvis.addCommand(/погода/i, function(phrase){\n  return "Сегодня отличный день для кода.";\n});\n\nPYOS.jarvis.say("Готово");</pre>'+
+'<h3>Порядок матча команд</h3>'+
+'<ol>'+
+'<li>команды плагинов (<code>addCommand</code>);</li>'+
+'<li>встроенные системные команды;</li>'+
+'<li>Gemini (если задан ключ), иначе локальный ответ.</li>'+
+'</ol>'+
+'<p>Обработчик может вернуть строку — её озвучат и покажут.</p>'},
+{cat:'API',id:'api-launch',title:'PYOS.launch / theme',html:
+'<h2>Запуск приложений и тема</h2>'+
+'<pre>PYOS.launch("terminal");\nPYOS.launch("plug-counter");\n\nPYOS.theme.setAccent("green");\nPYOS.theme.setWall("matrix");\nPYOS.theme.setFx(false);</pre>'+
+'<p>Id встроенных приложений: <code>terminal</code>, <code>files</code>, <code>editor</code>, <code>calc</code>, <code>notes</code>, <code>settings</code>, <code>about</code>, <code>plugin-studio</code>. Плагины: <code>plug-&lt;id&gt;</code>.</p>'},
+{cat:'Примеры',id:'ex1',title:'Пример: Счётчик',html:
+'<h2>Пример 1 — Счётчик с состоянием</h2>'+
+'<pre>PYOS.plugins.register({\n  id: "counter",\n  name: "Счётчик",\n  icon: "star",\n  width: 380,\n  height: 300,\n  init: function(app){\n    var n = PYOS.store.get("counter.n", 0);\n    app.body.innerHTML =\n      "&lt;div style=\'padding:34px;text-align:center\'&gt;" +\n      "&lt;div id=\'v\' style=\'font-size:56px;font-weight:700\'&gt;" + n + "&lt;/div&gt;" +\n      "&lt;div style=\'display:flex;gap:8px;justify-content:center;margin-top:18px\'&gt;" +\n      "&lt;button class=\'py-btn\' id=\'p\'&gt;+1&lt;/button&gt;" +\n      "&lt;button class=\'py-btn ghost\' id=\'m\'&gt;−1&lt;/button&gt;" +\n      "&lt;button class=\'py-btn ghost\' id=\'r\'&gt;сброс&lt;/button&gt;" +\n      "&lt;/div&gt;&lt;/div&gt;";\n    var v = app.body.querySelector("#v");\n    function set(x){ n = x; v.textContent = n; PYOS.store.set("counter.n", n); }\n    app.body.querySelector("#p").onclick = function(){ set(n + 1); };\n    app.body.querySelector("#m").onclick = function(){ set(n - 1); };\n    app.body.querySelector("#r").onclick = function(){ set(0); };\n  }\n});</pre>'},
+{cat:'Примеры',id:'ex2',title:'Пример: Заметки в VFS',html:
+'<h2>Пример 2 — Плагин пишет в общую ФС</h2>'+
+'<pre>PYOS.plugins.register({\n  id: "quick-notes",\n  name: "Быстрые заметки",\n  icon: "doc",\n  init: function(app){\n    if(!PYOS.vfs.resolve("/Заметки")){ PYOS.vfs.mkdir("/", "Заметки"); }\n    app.body.innerHTML =\n      "&lt;div style=\'padding:20px\'&gt;" +\n      "&lt;input id=\'t\' class=\'py-input\' placeholder=\'Текст заметки\' style=\'margin-bottom:10px\'&gt;" +\n      "&lt;button class=\'py-btn\' id=\'add\'&gt;Сохранить&lt;/button&gt;" +\n      "&lt;div id=\'ls\' style=\'margin-top:14px\'&gt;&lt;/div&gt;&lt;/div&gt;";\n    function draw(){\n      app.body.querySelector("#ls").innerHTML =\n        PYOS.vfs.list("/Заметки").map(function(f){\n          return "&lt;div style=\'padding:8px 12px;border:1px solid var(--line);" +\n            "border-radius:9px;margin-bottom:6px;font-size:13px\'&gt;" +\n            f.content + "&lt;/div&gt;";\n        }).join("") || "&lt;i style=\'color:var(--mut)\'&gt;пусто&lt;/i&gt;";\n    }\n    app.body.querySelector("#add").onclick = function(){\n      var t = app.body.querySelector("#t").value.trim();\n      if(!t){ return; }\n      PYOS.vfs.write("/Заметки", "заметка-" + Date.now() + ".txt", t);\n      app.body.querySelector("#t").value = "";\n      draw();\n      PYOS.notify("Заметки", "Сохранено");\n    };\n    draw();\n  }\n});</pre>'},
+{cat:'Примеры',id:'ex3',title:'Пример: Голосовая команда',html:
+'<h2>Пример 3 — Плагин + фраза для Jarvis</h2>'+
+'<pre>PYOS.plugins.register({\n  id: "coin",\n  name: "Монетка",\n  icon: "play",\n  init: function(app){\n    app.body.innerHTML = "&lt;div style=\'padding:40px;text-align:center\'&gt;" +\n      "&lt;div id=\'r\' style=\'font-size:28px\'&gt;Скажите Jarvis: «подбрось монетку»&lt;/div&gt;&lt;/div&gt;";\n    window.__coinEl = app.body.querySelector("#r");\n  }\n});\n\nPYOS.jarvis.addCommand(/подбрось монетку|монетка/i, function(){\n  var side = Math.random() &lt; 0.5 ? "орёл" : "решка";\n  if(window.__coinEl){ window.__coinEl.textContent = "Выпало: " + side.toUpperCase(); }\n  return "Выпал " + side + ".";\n});</pre>'},
+{cat:'Прочее',id:'errors',title:'Ошибки и отладка',html:
+'<h2>Ошибки и отладка</h2>'+
+'<h3>Где смотреть</h3>'+
+'<ul>'+
+'<li>Консоль браузера — ошибки плагинов логируются с меткой <code>[PYOS plugin]</code>;</li>'+
+'<li>падение при загрузке — системное уведомление, оболочка продолжает работать;</li>'+
+'<li>падение внутри <code>init</code> — текст ошибки в окне плагина.</li>'+
+'</ul>'+
+'<h3>Типовые проблемы</h3>'+
+'<table>'+
+'<tr><th>Симптом</th><th>Причина</th></tr>'+
+'<tr><td>Ярлык не появился</td><td>Нет id или name, либо исключение при выполнении кода.</td></tr>'+
+'<tr><td>Пустое окно</td><td><code>init</code> ничего не добавил в <code>app.body</code>.</td></tr>'+
+'<tr><td>Пропали данные</td><td>Ключи store без префикса пересеклись с другим плагином.</td></tr>'+
+'<tr><td>Иконка-заглушка</td><td>Имя иконки не из системного набора.</td></tr>'+
+'</table>'},
+{cat:'Прочее',id:'security',title:'Безопасность',html:
+'<h2>Модель безопасности</h2>'+
+'<ul>'+
+'<li>Код плагина выполняется в контексте страницы — это не песочница. Устанавливайте только прочитанный код.</li>'+
+'<li>Сетевые запросы плагинов подчиняются обычной политике CORS браузера.</li>'+
+'<li>API-ключ Gemini хранится в открытом виде в localStorage — это демо-система, не продакшен.</li>'+
+'</ul>'+
+'<h3>Что система делает сама</h3>'+
+'<ul>'+
+'<li>оборачивает загрузку каждого плагина в try/catch;</li>'+
+'<li>отключённые плагины не выполняются при старте;</li>'+
+'<li>дубликат id заменяет предыдущую версию.</li>'+
+'</ul>'}
+];
+
+/* ══════════ [JS-R] СТУДИЯ ПЛАГИНОВ ══════════ */
+var PLUGIN_TEMPLATE=
+'// ─── Новый плагин PyOS ───────────────────────────────\n'+
+'// Документация: вкладка «Документация» слева.\n'+
+'// «Запустить» — выполнить и создать ярлык в меню Пуск.\n\n'+
+'PYOS.plugins.register({\n'+
+'  id: "my-plugin",\n'+
+'  name: "Мой плагин",\n'+
+'  version: "1.0",\n'+
+'  icon: "star",\n'+
+'  width: 560,\n'+
+'  height: 400,\n'+
+'  init: function(app){\n'+
+'    app.body.innerHTML =\n'+
+'      "<div style=\\\'padding:30px;text-align:center\\\'>" +\n'+
+'      "<h2>Привет из плагина!</h2>" +\n'+
+'      "<p style=\\\'color:var(--mut);margin-top:8px\\\'>" +\n'+
+'      "Отредактируйте код и нажмите «Запустить» снова." +\n'+
+'      "</p></div>";\n'+
+'  }\n'+
+'});\n';
+registerApp({
+  id:'plugin-studio',name:'Студия плагинов',icon:'plug',
+  width:980,height:620,single:true,
+  launch:function(body){
+    body.innerHTML='';
+    var app=h('div',{class:'py-app'});
+    var tabs=h('div',{class:'py-plug-tabs'});
+    var main=h('div',{class:'py-flex1',style:{display:'flex',minHeight:'0'}});
+    app.append(tabs,main);
+    body.appendChild(app);
+    var curTab='docs',docSel=DOCS[0].id;
+    function tabBtn(id,label){
+      var b=h('div',{class:'py-ptab'+(curTab===id?' on':'')},label);
+      b.addEventListener('click',function(){curTab=id;render();});
+      return b;
+    }
+    function render(){
+      tabs.innerHTML='';
+      tabs.append(tabBtn('docs','Документация'),tabBtn('code','Редактор'),tabBtn('list','Плагины'));
+      main.innerHTML='';
+      if(curTab==='docs'){renderDocs();}
+      if(curTab==='code'){renderCode();}
+      if(curTab==='list'){renderList();}
+    }
+    function renderDocs(){
+      var nav=h('div',{class:'py-plug-docs-nav'});
+      var pane=h('div',{class:'py-plug-main'});
+      main.append(nav,pane);
+      var cats=[];
+      DOCS.forEach(function(d){if(cats.indexOf(d.cat)<0){cats.push(d.cat);}});
+      cats.forEach(function(cat){
+        nav.appendChild(h('div',{class:'py-doc-cat'},cat));
+        DOCS.filter(function(d){return d.cat===cat;}).forEach(function(d){
+          var l=h('div',{class:'py-doc-link'+(d.id===docSel?' on':'')},d.title);
+          l.addEventListener('click',function(){
+            docSel=d.id;
+            $$('.py-doc-link',nav).forEach(function(x){x.classList.remove('on');});
+            l.classList.add('on');
+            drawDoc(pane,d);
+          });
+          nav.appendChild(l);
+        });
+      });
+      drawDoc(pane,DOCS.filter(function(d){return d.id===docSel;})[0]||DOCS[0]);
+    }
+    function drawDoc(pane,d){
+      pane.innerHTML='';
+      var box=h('div',{class:'py-doc',html:d.html});
+      box.style.animation='pyUp .35s ease';
+      pane.appendChild(box);
+      pane.scrollTop=0;
+    }
+    function detectId(code){
+      var m=code.match(/id\s*:\s*["']([\w-]+)["']/);
+      return m?m[1]:null;
+    }
+    function renderCode(){
+      var wrap=h('div',{class:'py-flex1',style:{display:'flex',flexDirection:'column',minWidth:'0'}});
+      main.appendChild(wrap);
+      var ta=h('textarea',{spellcheck:'false',style:{
+        flex:'1',background:'#070b12',border:'none',outline:'none',resize:'none',
+        color:'#c8e0ff',fontFamily:'Consolas,monospace',fontSize:'13px',
+        lineHeight:'1.6',padding:'16px',whiteSpace:'pre'}});
+      ta.value=store.get('plugins.draft',PLUGIN_TEMPLATE);
+      ta.addEventListener('input',function(){store.set('plugins.draft',ta.value);});
+      var st=h('div',{class:'py-status'});
+      function runCode(){
+        try{
+          var fn=new Function('PYOS','window','document','"use strict";\n'+ta.value+'\n');
+          fn(pluginAPI,window,document);
+          st.textContent='Выполнено без ошибок.';
+          notify('Студия плагинов','Код выполнен. Ярлык обновлён в меню Пуск.','plug');
+          var pid=detectId(ta.value);
+          if(pid){plugins.setCode(pid,ta.value);}
+        }catch(e){
+          st.textContent='Ошибка: '+e.message;
+          notify('Студия плагинов','Ошибка выполнения: '+e.message,'close');
+        }
+      }
+      wrap.appendChild(h('div',{class:'py-toolbar'},
+        h('button',{class:'py-tbtn acc',onclick:runCode},icon('play'),'Запустить'),
+        h('button',{class:'py-tbtn',onclick:function(){
+          ta.value=PLUGIN_TEMPLATE;store.set('plugins.draft',PLUGIN_TEMPLATE);
+        }},icon('refresh'),'Шаблон'),
+        h('button',{class:'py-tbtn',onclick:function(){
+          var c=vfs.read('/Проекты/my_plugin.js');
+          if(c!==null){ta.value=c;}
+          else{notify('Студия','Файл /Проекты/my_plugin.js не найден','close');}
+        }},icon('files'),'Из файла'),
+        h('span',{class:'py-flex1'}),st));
+      wrap.appendChild(ta);
+      st.append('Черновик сохраняется автоматически');
+    }
+    function renderList(){
+      var wrap=h('div',{class:'py-plug-main'});
+      main.appendChild(wrap);
+      wrap.appendChild(h('div',{class:'py-doc'},
+        h('h2',null,'Установленные плагины'),
+        h('p',{class:'lead'},'Включение, запуск и удаление.')));
+      var list=plugins.list();
+      if(!list.length){
+        wrap.appendChild(h('div',{class:'py-note'},
+          'Пока пусто. Вкладка «Редактор» → «Запустить» создаст первый плагин.'));
+      }
+      list.forEach(function(p,i){
+        wrap.appendChild(h('div',{class:'py-plug-item',style:{animationDelay:(i*0.05)+'s'}},
+          h('div',{class:'pi-ic'},safeIcon(p.icon)),
+          h('div',{class:'pi-t'},h('b',null,p.name),
+            h('i',null,p.id+' · v'+(p.version||'1.0')+' · автор: '+(p.author||'—'))),
+          (function(pp){
+            var b1=h('button',{class:'py-tbtn'},icon('play'),'Открыть');
+            b1.addEventListener('click',function(){launch('plug-'+pp.id);});
+            var b2=h('button',{class:'py-tbtn',style:{color:'var(--err)'}},icon('trash'),'Удалить');
+            b2.addEventListener('click',function(){
+              if(confirm('Удалить плагин «'+pp.name+'»?')){
+                plugins.remove(pp.id);
+                render();
+                notify('Студия плагинов','Удалён: '+pp.name,'trash');
+              }
+            });
+            var frag=document.createDocumentFragment();
+            frag.append(b1,b2);
+            return frag;
+          })(p)));
+      });
+    }
+    render();
+  }
+});
+
+/* ══════════ [JS-S] JARVIS ══════════ */
+var jarvis={
+  rec:null,
+  listening:false,
+  custom:[],
+  enable:function(on){
+    store.set('jarvis.on',on);
+    if(orb){orb.style.display=on?'grid':'none';}
+    if(!on){this.stopListen();closeJarvis();}
+    bus.emit('jarvis');
+  },
+  say:function(text){
+    if(!store.get('jarvis.speak',true)||!('speechSynthesis' in window)){return;}
+    try{
+      speechSynthesis.cancel();
+      var u=new SpeechSynthesisUtterance(text);
+      u.lang='ru-RU';
+      u.rate=store.get('jarvis.rate',1);
+      var ru=speechSynthesis.getVoices().filter(function(v){return v.lang.indexOf('ru')===0;})[0];
+      if(ru){u.voice=ru;}
+      speechSynthesis.speak(u);
+    }catch(e){}
+  },
+  replyLocal:function(text){
+    var t=(text||'').toLowerCase().trim(),m;
+    for(var i=0;i<this.custom.length;i++){
+      var c=this.custom[i];
+      if(c.re.test(t)){
+        try{
+          var r=c.fn(text);
+          return typeof r==='string'?r:'Выполняю.';
+        }catch(e){return 'Ошибка команды плагина.';}
+      }
+    }
+    if((m=t.match(/открой\s+(.+)/))){
+      var target=m[1].trim(),found=null;
+      Object.keys(apps).forEach(function(id){
+        if(apps[id].name.toLowerCase().indexOf(target)>=0||id.indexOf(target)>=0){found=id;}
+      });
+      if(found){launch(found);return 'Открываю: '+apps[found].name+'.';}
+      return 'Не нашёл приложение «'+target+'».';
+    }
+    if(/сколько времени|который час|время/.test(t)){
+      var d=new Date();
+      return 'Сейчас '+fmtTime(d)+', '+fmtDate(d)+'.';
+    }
+    if((m=t.match(/обои\s+(\w+)/))){
+      var w=WALLS.filter(function(x){return x.id===m[1];})[0];
+      if(w){theme.setWall(w.id);return 'Обои «'+w.name+'» применены.';}
+      return 'Доступны: '+WALLS.map(function(x){return x.name;}).join(', ')+'.';
+    }
+    if((m=t.match(/(?:тему|цвет|акцент)\s+(\w+)/))){
+      var a=ACCENTS.filter(function(x){return x.id===m[1];})[0];
+      if(a){theme.setAccent(a.id);return 'Акцент «'+a.name+'» применён.';}
+      return 'Доступны: '+ACCENTS.map(function(x){return x.id;}).join(', ')+'.';
+    }
+    if(/закрой окно|закрыть окно/.test(t)){
+      return wm.closeTop()?'Закрыл.':'Окон нет.';
+    }
+    if(/перезагрузи|перезагрузка/.test(t)){
+      setTimeout(systemReboot,800);return 'Перезагружаю систему.';
+    }
+    if(/выключи|заверши работу/.test(t)){
+      setTimeout(powerOff,800);return 'Выключаю.';
+    }
+    if(/кто ты|что ты такое/.test(t)){
+      return 'Я Jarvis — системный ассистент '+SYS.name+'. Управляю окнами, темой, файлами. Подключите Gemini в настройках для свободных диалогов.';
+    }
+    if(/расскажи о системе|о системе/.test(t)){
+      return SYS.name+' '+SYS.version+', кодовое имя '+SYS.codename+'. Ядро '+SYS.kernel+'. Пользователь: '+store.get('user.name','Пользователь')+'.';
+    }
+    if(/привет|здравствуй|хай/.test(t)){
+      return 'Привет, '+store.get('user.name','Пользователь')+'. Чем помочь?';
+    }
+    if(/помощь|что ты умеешь/.test(t)){
+      return 'Умею: открыть приложение, сменить обои и цвет, показать время, закрыть окно, перезагрузить или выключить систему. С ключом Gemini отвечаю на свободные вопросы.';
+    }
+    return null;
+  },
+  askGemini:function(text,cb){
+    var key=store.get('jarvis.key','');
+    if(!key){cb(null);return;}
+    var url='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+encodeURIComponent(key);
+    var payload={
+      contents:[{parts:[{text:text}]}],
+      systemInstruction:{parts:[{text:
+        'Ты — Jarvis, встроенный голосовой ассистент операционной среды PyOS Studio '+SYS.version+
+        '. Отвечай на русском, кратко (до 3 предложений), дружелюбно. Пользователя зовут '+
+        store.get('user.name','Пользователь')+'.'}]}};
+    fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)})
+    .then(function(r){return r.ok?r.json():null;})
+    .then(function(j){
+      var out=null;
+      try{out=j.candidates[0].content.parts[0].text;}
+      catch(e){out=null;}
+      cb(out);
+    })
+    .catch(function(){cb(null);});
+  },
+  testGemini:function(){
+    if(!store.get('jarvis.key','')){notify('Jarvis','Сначала вставьте API-ключ','mic');return;}
+    notify('Jarvis','Проверяю соединение с Gemini…','wave');
+    this.askGemini('Скажи одно слово: онлайн.',function(ans){
+      if(ans){notify('Jarvis','Gemini на связи: '+ans.slice(0,60),'info');}
+      else{notify('Jarvis','Не удалось достучаться до Gemini. Проверьте ключ и сеть.','close');}
+    });
+  },
+  process:function(text){
+    var self=this;
+    if(!text){return;}
+    jvUserMsg(text);
+    var local=this.replyLocal(text);
+    if(local){jvBotMsg(local);this.say(local);return;}
+    var pending=jvPending();
+    this.askGemini(text,function(ans){
+      pending.remove();
+      if(ans){jvBotMsg(ans);self.say(ans);}
+      else{
+        jvBotMsg('Локальный ответ не найден, а ключ Gemini не задан или недоступен. Скажите «помощь» или добавьте ключ в Настройках.');
+      }
+    });
+  },
+  startListen:function(){
+    var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){
+      notify('Jarvis','Браузер не поддерживает распознавание речи. Пишите текстом.','close');
+      return;
+    }
+    var self=this;
+    this.stopListen();
+    this.rec=new SR();
+    this.rec.lang='ru-RU';
+    this.rec.interimResults=false;
+    this.rec.maxAlternatives=1;
+    this.rec.onresult=function(e){
+      var text=e.results[0][0].transcript;
+      self.listening=false;
+      updateMicUI(false);
+      self.process(text);
+    };
+    this.rec.onerror=function(){self.listening=false;updateMicUI(false);};
+    this.rec.onend=function(){self.listening=false;updateMicUI(false);};
+    try{this.rec.start();this.listening=true;updateMicUI(true);}
+    catch(e){}
+  },
+  stopListen:function(){
+    if(this.rec){try{this.rec.stop();}catch(e){}this.rec=null;}
+    this.listening=false;
+    updateMicUI(false);
+  }
+};
+var orb=null,jvPanel=null,jvLog=null,jvInput=null,jvMic=null;
+function updateMicUI(rec){
+  if(jvMic){jvMic.classList.toggle('rec',rec);}
+  if(orb){orb.classList.toggle('listening',rec);}
+  var wave=$('.py-jv-wave');
+  if(wave){wave.classList.toggle('on',rec);}
+  var st=$('#jv-status');
+  if(st){st.textContent=rec?'Слушаю…':(store.get('jarvis.key','')?'Jarvis · Gemini подключён':'Jarvis · локальный режим');}
+}
+function jvUserMsg(t){
+  if(!jvLog){return;}
+  jvLog.appendChild(h('div',{class:'py-jv-msg u'},t));
+  jvLog.scrollTop=jvLog.scrollHeight;
+}
+function jvBotMsg(t){
+  if(!jvLog){return;}
+  jvLog.appendChild(h('div',{class:'py-jv-msg j'},t));
+  jvLog.scrollTop=jvLog.scrollHeight;
+}
+function jvPending(){
+  var el=h('div',{class:'py-jv-msg j py-jv-dots',html:'<span></span><span></span><span></span>'});
+  if(jvLog){jvLog.appendChild(el);jvLog.scrollTop=jvLog.scrollHeight;}
+  return el;
+}
+function openJarvis(){
+  if(jvPanel){return;}
+  jvPanel=h('div',{class:'py-jarvis'});
+  jvPanel.appendChild(h('div',{class:'py-jv-head'},
+    h('div',{class:'core'}),
+    h('div',null,h('b',null,'Jarvis'),h('i',{id:'jv-status'},'системный ассистент')),
+    h('div',{class:'py-jv-wave'},h('s'),h('s'),h('s'),h('s'),h('s')),
+    h('div',{class:'py-wbtn close',onclick:closeJarvis},icon('close'))));
+  jvLog=h('div',{class:'py-jv-log'});
+  jvPanel.appendChild(jvLog);
+  var chips=h('div',{class:'py-jv-cmds'});
+  ['открой терминал','сколько времени','обои matrix','тему green','помощь'].forEach(function(c){
+    chips.appendChild(h('span',{class:'py-chip',onclick:function(){jarvis.process(c);}},c));
+  });
+  jvPanel.appendChild(chips);
+  jvInput=h('input',{placeholder:'Спросите или дайте команду…',autocomplete:'off'});
+  jvMic=h('button',{class:'py-mic',title:'Голос'},icon('mic'));
+  jvMic.addEventListener('click',function(){
+    if(jarvis.listening){jarvis.stopListen();}else{jarvis.startListen();}
+  });
+  jvInput.addEventListener('keydown',function(e){
+    if(e.key!=='Enter'){return;}
+    var t=jvInput.value.trim();
+    jvInput.value='';
+    if(t){jarvis.process(t);}
+  });
+  jvPanel.appendChild(h('div',{class:'py-jv-in'},jvInput,jvMic));
+  root.appendChild(jvPanel);
+  jvBotMsg('Системы активны. Я слушаю. Команды: «открой файлы», «обои ocean», «сколько времени».');
+  updateMicUI(false);
+  setTimeout(function(){jvInput.focus();},120);
+}
+function closeJarvis(){
+  if(jvPanel){jvPanel.remove();jvPanel=null;jvLog=null;}
+  jarvis.stopListen();
+}
+
+/* ══════════ [JS-T] ОБОЛОЧКА ══════════ */
+var wall=h('div',{class:'py-wall '+wallCls()});
+function wallGlows(){
+  wall.innerHTML='';
+  wall.append(h('div',{class:'py-wall-glow g1'}),h('div',{class:'py-wall-glow g2'}));
+}
+wallGlows();
+root.append(wall,snapL,snapR);
+deskLayer=h('div',{class:'py-desktop'});
+root.appendChild(deskLayer);
+var iconsBox=h('div',{class:'py-icons'});
+deskLayer.appendChild(iconsBox);
+bus.on('wall',function(){wall.className='py-wall '+wallCls();wallGlows();});
+/* панель задач */
+var taskbar=h('div',{class:'py-taskbar'});
+var startBtn=h('div',{class:'py-startbtn',title:'Пуск'});
+startBtn.appendChild(logo());
+startBtn.addEventListener('click',function(e){e.stopPropagation();toggleStart();});
+var tbApps=h('div',{class:'py-tb-apps'});
+var jdot=h('div',{class:'py-jdot live'});
+var trayJ=h('div',{class:'py-tray-btn',title:'Jarvis',onclick:function(){
+  if(!store.get('jarvis.on',true)){notify('Jarvis','Выключен. Включите в Настройках.','mic');return;}
+  if(jvPanel){closeJarvis();}else{openJarvis();}
+}},jdot,icon('mic'));
+var clock=h('div',{class:'py-clock'});
+clock.addEventListener('click',function(){
+  var d=new Date();
+  notify('Часы',fmtDate(d)+' · '+d.toLocaleTimeString('ru-RU'),'info');
+});
+var tray=h('div',{class:'py-tray'},trayJ,clock);
+taskbar.append(startBtn,tbApps,h('div',{class:'py-flex1'}),tray);
+root.appendChild(taskbar);
+bus.on('jarvis',function(){jdot.classList.toggle('live',!!store.get('jarvis.on',true));});
+setInterval(function(){
+  var d=new Date();
+  clock.innerHTML='';
+  clock.append(h('b',null,fmtTime(d)),h('i',null,fmtDate(d)));
+},1000);
+bus.on('wm',function(){
+  tbApps.innerHTML='';
+  wm.order.forEach(function(id){
+    var w=wm.wins[id];
+    if(!w){return;}
+    var b=h('div',{class:'py-tb-item'+(w.minimized?'':' on')+(w.minimized?' min':'')},
+      safeIcon(w.icon),h('span',null,w.title),h('span',{class:'dot'}));
+    b.addEventListener('click',function(){
+      if(w.minimized){wm.restore(id);}
+      else if(w.el.style.zIndex==String(wm.z)){wm.minimize(id);}
+      else{wm.focus(id);}
+    });
+    tbApps.appendChild(b);
+  });
+});
+/* ярлыки рабочего стола */
+function renderDesktopIcons(){
+  iconsBox.innerHTML='';
+  var favs=['terminal','files','editor','calc','notes','plugin-studio','settings','about'];
+  var extra=Object.keys(apps).filter(function(id){return favs.indexOf(id)<0;});
+  favs.concat(extra).forEach(function(id,i){
+    var a=apps[id];
+    if(!a){return;}
+    var d=h('div',{class:'py-dicon',style:{animationDelay:(i*0.05)+'s'},title:a.name},
+      safeIcon(a.icon),h('span',null,a.name));
+    d.addEventListener('dblclick',function(){launch(id);});
+    d.addEventListener('click',function(){
+      if(d.dataset.armed){launch(id);delete d.dataset.armed;}
+      else{
+        d.dataset.armed='1';
+        setTimeout(function(){delete d.dataset.armed;},350);
+      }
+    });
+    iconsBox.appendChild(d);
+  });
+}
+bus.on('apps',renderDesktopIcons);
+/* контекстное меню стола */
+deskLayer.addEventListener('contextmenu',function(e){
+  if(e.target.closest('.py-win')){return;}
+  e.preventDefault();
+  ctxMenu(e.clientX,e.clientY,[
+    {label:'Обновить',icon:'refresh',run:renderDesktopIcons},
+    {label:'Следующие обои',icon:'palette',run:function(){
+      var ids=WALLS.map(function(w){return w.id;});
+      theme.setWall(ids[(ids.indexOf(store.get('wall','aurora'))+1)%ids.length]);
+    }},
+    '-',
+    {label:'Терминал',icon:'term',run:function(){launch('terminal');}},
+    {label:'Файлы',icon:'files',run:function(){launch('files');}},
+    {label:'Персонализация',icon:'gear',run:function(){launch('settings');}},
+    {label:'О системе',icon:'info',run:function(){launch('about');}}]);
+});
+/* меню Пуск */
+var startEl=null;
+function toggleStart(){if(startEl){closeStart();}else{openStart();}}
+function closeStart(){if(startEl){startEl.remove();startEl=null;}}
+document.addEventListener('pointerdown',function(e){
+  if(startEl&&!startEl.contains(e.target)&&!startBtn.contains(e.target)){closeStart();}
+});
+function openStart(){
+  closeStart();
+  startEl=h('div',{class:'py-start'});
+  var head=h('div',{class:'py-start-head'});
+  head.appendChild(logo());
+  head.appendChild(h('div',{class:'t'},
+    h('b',null,SYS.name),
+    h('i',null,'Операционная среда разработки · v'+SYS.version)));
+  startEl.appendChild(head);
+  var search=h('div',{class:'py-search'});
+  search.appendChild(icon('search'));
+  var sin=h('input',{placeholder:'Поиск приложений…'});
+  search.appendChild(sin);
+  startEl.appendChild(search);
+  var grid=h('div',{class:'py-start-apps'});
+  startEl.appendChild(grid);
+  function drawGrid(filter){
+    grid.innerHTML='';
+    var i=0;
+    Object.keys(apps).forEach(function(id){
+      var a=apps[id];
+      if(filter&&a.name.toLowerCase().indexOf(filter.toLowerCase())<0){return;}
+      var b=h('div',{class:'py-sapp',style:{animationDelay:(i++*0.03)+'s'}},
+        safeIcon(a.icon),h('span',null,a.name));
+      b.addEventListener('click',function(){launch(id);});
+      grid.appendChild(b);
+    });
+    if(!grid.children.length){
+      grid.appendChild(h('div',{style:{gridColumn:'1/-1',textAlign:'center',
+        color:'var(--mut)',padding:'30px 0',fontSize:'13px'}},'Ничего не найдено'));
+    }
+  }
+  sin.addEventListener('input',function(){drawGrid(sin.value);});
+  var uname=store.get('user.name','Пользователь');
+  var ava=h('div',{class:'py-ava'},uname.charAt(0).toUpperCase());
+  var unameEl=h('span',null,uname);
+  var chip=h('div',{class:'py-userchip'},ava,unameEl);
+  chip.addEventListener('click',function(){launch('about');});
+  bus.on('user',function(){
+    var n=store.get('user.name','Пользователь');
+    unameEl.textContent=n;
+    ava.textContent=n.charAt(0).toUpperCase();
+  });
+  var power=h('div',{class:'py-power'});
+  function pb(ic,title,fn){
+    var b=h('div',{class:'py-pbtn',title:title},icon(ic));
+    b.addEventListener('click',fn);
+    power.appendChild(b);
+  }
+  pb('lock','Заблокировать',lockScreen);
+  pb('restart','Перезагрузка',systemReboot);
+  pb('power','Выключить',powerOff);
+  startEl.appendChild(h('div',{class:'py-start-foot'},chip,power));
+  root.appendChild(startEl);
+  drawGrid('');
+}
+
+/* ══════════ [JS-U] БЛОКИРОВКА / ПИТАНИЕ / СБРОС ══════════ */
+function lockScreen(){
+  closeStart();
+  var d=new Date();
+  var lk=h('div',{class:'py-lock'},
+    logo(),
+    h('div',{class:'lt'},fmtTime(d)),
+    h('div',{class:'ld'},fmtDate(d)),
+    h('div',{class:'hint'},'Кликните, чтобы разблокировать'));
+  lk.addEventListener('click',function(){
+    lk.style.transition='opacity .4s';
+    lk.style.opacity='0';
+    setTimeout(function(){lk.remove();},400);
+  });
+  root.appendChild(lk);
+}
+function powerOff(){
+  closeStart();
+  wm.closeAll();
+  var off=h('div',{class:'py-off'},
+    h('div',{class:'msg'},'СИСТЕМА ВЫКЛЮЧЕНА'),
+    h('button',{class:'py-btn ghost small',onclick:function(){
+      off.remove();
+      bootSequence(false);
+    }},icon('power'),'Включить'));
+  root.appendChild(off);
+}
+function systemReboot(){
+  store.set('oobe.done',true);
+  location.reload();
+}
+function systemReset(){
+  store.wipe();
+  location.reload();
+}
+
+/* ══════════ [JS-V] ЭКРАН ЗАГРУЗКИ ══════════ */
+function bootSequence(fast){
+  var stages=['Инициализация ядра…','Загрузка оболочки…','Монтирование VFS…',
+    'Подъём оконного менеджера…','Запуск Jarvis…','Применение темы…',
+    'Загрузка плагинов…','Готово.'];
+  var b=h('div',{class:'py-boot'},
+    h('div',{class:'scan'}),
+    logo('big'),
+    h('div',{class:'name'},'PY',h('span',null,'OS'),' STUDIO'),
+    h('div',{class:'loader'},h('i')),
+    h('div',{class:'st'},stages[0]));
+  root.appendChild(b);
+  var stEl=$('.st',b);
+  var i=0;
+  var dur=fast?260:520;
+  var timer=setInterval(function(){
+    i++;
+    if(i>=stages.length){
+      clearInterval(timer);
+      setTimeout(function(){
+        b.style.transition='opacity .6s ease, transform .6s ease';
+        b.style.opacity='0';
+        b.style.transform='scale(1.06)';
+        setTimeout(function(){b.remove();},620);
+      },300);
+      return;
+    }
+    stEl.textContent=stages[i];
+  },dur);
+}
+
+/* ══════════ [JS-W] OOBE — МАСТЕР УСТАНОВКИ ══════════ */
+function runOOBE(){
+  var oobe=h('div',{class:'py-oobe'});
+  var card=h('div',{class:'py-oobe-card'});
+  var top=h('div',{class:'py-oobe-top'});
+  top.append(logo(),h('b',null,'Установка '+SYS.name),h('span',{class:'step'},''));
+  var prog=h('div',{class:'py-oobe-prog'},h('i'));
+  var body=h('div',{class:'py-oobe-body'});
+  var hint=h('span',{class:'hint'},'');
+  var backBtn=h('button',{class:'py-btn ghost'},'Назад');
+  var nextBtn=h('button',{class:'py-btn'},'Далее');
+  var foot=h('div',{class:'py-oobe-foot'},hint,backBtn,nextBtn);
+  card.append(top,prog,body,foot);
+  oobe.appendChild(card);
+  root.appendChild(oobe);
+  var state={name:'',avatar:'П',accent:'blue',wall:'aurora',fx:true,
+    jarvisOn:true,speak:true,gkey:''};
+  var steps=[],idx=0,back=false;
+  function step(title,sub,build,isLast){
+    steps.push({title:title,sub:sub,build:build,isLast:!!isLast});
+  }
+  step('Добро пожаловать','Настроим систему за минуту.',function(box){
+    var wrap=h('div',{style:{textAlign:'center',padding:'30px 0 10px'}});
+    var lg=logo();
+    lg.style.width='130px';lg.style.height='130px';
+    lg.style.animation='pyGlow 3s ease infinite, pyFloat 5s ease-in-out infinite';
+    wrap.appendChild(lg);
+    wrap.appendChild(h('h1',{style:{marginTop:'24px',fontSize:'30px'}},SYS.name+' '+SYS.version));
+    wrap.appendChild(h('div',{style:{color:'var(--mut)',marginTop:'10px',lineHeight:'1.6',fontSize:'14px'}},
+      'Операционная среда разработки. Окна, файлы, терминал, плагины и голосовой ассистент Jarvis. Кодовое имя — «'+SYS.codename+'».'));
+    box.appendChild(wrap);
+  });
+  step('Как вас зовут?','Имя используется в Пуске, терминале и приветствиях Jarvis.',function(box){
+    var inp=h('input',{class:'py-input',placeholder:'Например: Разработчик',value:state.name});
+    inp.addEventListener('input',function(){state.name=inp.value;});
+    box.appendChild(h('div',{class:'py-field'},h('label',null,'ИМЯ ПОЛЬЗОВАТЕЛЯ'),inp));
+    box.appendChild(h('div',{class:'py-field'},h('label',null,'АВАТАР (БУКВА)')));
+    var grid=h('div',{style:{display:'flex',gap:'8px',flexWrap:'wrap'}});
+    AVATARS.forEach(function(l){
+      var c=h('div',{class:'py-ava',style:{width:'44px',height:'44px',cursor:'pointer',
+        outline:state.avatar===l?'3px solid var(--acc)':'none',outlineOffset:'2px'}},l);
+      c.addEventListener('click',function(){
+        state.avatar=l;
+        Array.prototype.forEach.call(grid.children,function(x){x.style.outline='none';});
+        c.style.outline='3px solid var(--acc)';
+        c.style.outlineOffset='2px';
+      });
+      grid.appendChild(c);
+    });
+    box.appendChild(grid);
+  });
+  step('Цвет системы','Акцент окрашивает кнопки, окна и свечения.',function(box){
+    var grid=h('div',{class:'py-choice'});
+    ACCENTS.forEach(function(a,i){
+      var cardx=h('div',{class:'py-card'+(state.accent===a.id?' sel':''),
+        style:{animationDelay:(i*0.06)+'s'}},
+        h('div',{class:'py-swatch',style:{background:'linear-gradient(135deg,'+a.a+','+a.b+')'}}),
+        h('b',null,a.name),h('i',null,a.a+' → '+a.b));
+      cardx.addEventListener('click',function(){
+        state.accent=a.id;
+        document.documentElement.style.setProperty('--acc',a.a);
+        document.documentElement.style.setProperty('--acc2',a.b);
+        Array.prototype.forEach.call(grid.children,function(x){x.classList.remove('sel');});
+        cardx.classList.add('sel');
+      });
+      grid.appendChild(cardx);
+    });
+    box.appendChild(grid);
+  });
+  step('Обои рабочего стола','Все обои анимированные.',function(box){
+    var grid=h('div',{class:'py-choice'});
+    WALLS.forEach(function(w,i){
+      var cardx=h('div',{class:'py-card'+(state.wall===w.id?' sel':''),
+        style:{animationDelay:(i*0.06)+'s'}},
+        h('div',{class:'py-wprev '+w.cls}),h('b',null,w.name));
+      cardx.addEventListener('click',function(){
+        state.wall=w.id;
+        Array.prototype.forEach.call(grid.children,function(x){x.classList.remove('sel');});
+        cardx.classList.add('sel');
+      });
+      grid.appendChild(cardx);
+    });
+    box.appendChild(grid);
+  });
+  step('Анимации','В системе много движения.',function(box){
+    var sw=h('div',{class:'py-sw'+(state.fx?' on':'')});
+    var row=h('div',{class:'py-toggle'},
+      h('div',{class:'tl'},h('b',null,'Полные анимации'),
+        h('i',null,'Отключите на слабых машинах — интерфейс станет мгновенным')),sw);
+    row.addEventListener('click',function(){
+      state.fx=!state.fx;sw.classList.toggle('on',state.fx);
+    });
+    box.appendChild(row);
+    box.appendChild(h('div',{class:'py-note'},
+      'Тот же тумблер живёт в Настройки → Персонализация → Эффекты.'));
+  });
+  step('Голосовой ассистент Jarvis','Голос, текст, команды и Gemini.',function(box){
+    var sw1=h('div',{class:'py-sw on'});
+    var r1=h('div',{class:'py-toggle'},
+      h('div',{class:'tl'},h('b',null,'Включить Jarvis'),
+        h('i',null,'Орб в углу, панель диалога, распознавание речи')),sw1);
+    r1.addEventListener('click',function(){
+      state.jarvisOn=!state.jarvisOn;sw1.classList.toggle('on',state.jarvisOn);
+    });
+    var sw2=h('div',{class:'py-sw on'});
+    var r2=h('div',{class:'py-toggle'},
+      h('div',{class:'tl'},h('b',null,'Озвучивать ответы'),
+        h('i',null,'Синтез речи браузера, русский голос')),sw2);
+    r2.addEventListener('click',function(){
+      state.speak=!state.speak;sw2.classList.toggle('on',state.speak);
+    });
+    var key=h('input',{class:'py-input',type:'password',placeholder:'AIza… или оставьте пустым'});
+    key.addEventListener('input',function(){state.gkey=key.value.trim();});
+    box.append(r1,r2,
+      h('div',{class:'py-field',style:{marginTop:'14px'}},
+        h('label',null,'API-КЛЮЧ GEMINI (МОЖНО ПОТОМ)'),key));
+    box.appendChild(h('div',{class:'py-note'},
+      'Без ключа Jarvis выполняет системные команды локально. Ключ бесплатный — Google AI Studio. Хранится только в этом браузере.'));
+  });
+  step('Приватность','Коротко и честно.',function(box){
+    box.appendChild(h('div',{class:'py-toggle'},
+      h('div',{class:'tl'},h('b',null,'Телеметрия'),
+        h('i',null,'Отключена навсегда. Никаких внешних запросов от оболочки.'))));
+    box.appendChild(h('div',{class:'py-toggle'},
+      h('div',{class:'tl'},h('b',null,'Хранение данных'),
+        h('i',null,'Настройки, файлы и плагины живут в localStorage этого браузера.'))));
+    box.appendChild(h('div',{class:'py-note'},
+      'Сетевые запросы делает только Jarvis и только на адрес Gemini, если указан ключ.'));
+  });
+  step('Установка','Применяем конфигурацию…',function(){},true);
+  function drawStep(){
+    body.innerHTML='';
+    var s=steps[idx];
+    $('.step',top).textContent='Шаг '+(idx+1)+' из '+steps.length;
+    $('.py-oobe-prog i',card).style.width=(((idx+1)/steps.length)*100)+'%';
+    backBtn.style.visibility=idx===0?'hidden':'visible';
+    if(s.isLast){
+      foot.classList.add('py-hidden');
+      runInstall();
+      return;
+    }
+    foot.classList.remove('py-hidden');
+    nextBtn.textContent='Далее';
+    hint.textContent='Шаг '+(idx+1)+' · '+s.title;
+    var wrap=h('div',{class:'py-oobe-step'+(back?' back':'')});
+    wrap.append(h('h1',null,s.title),h('div',{class:'sub'},s.sub));
+    s.build(wrap);
+    body.appendChild(wrap);
+    back=false;
+  }
+  backBtn.addEventListener('click',function(){
+    if(idx===0){return;}
+    idx--;back=true;drawStep();
+  });
+  nextBtn.addEventListener('click',function(){
+    if(idx<steps.length-1){idx++;drawStep();}
+  });
+  function runInstall(){
+    var stages=['Создание профиля…','Применение темы…','Раскладка обоев…',
+      'Калибровка Jarvis…','Форматирование VFS…','Регистрация приложений…','Финальные штрихи…'];
+    var inst=h('div',{class:'py-install'});
+    inst.appendChild(logo());
+    inst.appendChild(h('h2',null,'Устанавливаем '+SYS.name));
+    var st=h('div',{class:'stage'},stages[0]);
+    var bar=h('div',{class:'bar'},h('i'));
+    var pct=h('div',{class:'pct'},'0%');
+    inst.append(st,bar,pct);
+    body.appendChild(inst);
+    var i=0,p=0;
+    var timer=setInterval(function(){
+      i=(i+1)%stages.length;
+      st.textContent=stages[i];
+      p=clamp(p+Math.floor(Math.random()*9)+5,0,100);
+      $('.bar i',inst).style.width=p+'%';
+      pct.textContent=p+'%';
+      if(p>=100){
+        clearInterval(timer);
+        st.textContent='Готово.';
+        setTimeout(finishOOBE,700);
+      }
+    },420);
+  }
+  function finishOOBE(){
+    store.set('user.name',state.name.trim()||'Пользователь');
+    store.set('user.avatar',state.avatar);
+    store.set('accent',state.accent);
+    store.set('wall',state.wall);
+    store.set('fx',state.fx);
+    store.set('jarvis.on',state.jarvisOn);
+    store.set('jarvis.speak',state.speak);
+    store.set('jarvis.key',state.gkey);
+    store.set('oobe.done',true);
+    oobe.style.transition='opacity .6s ease, transform .6s ease';
+    oobe.style.opacity='0';
+    oobe.style.transform='scale(1.04)';
+    setTimeout(function(){
+      oobe.remove();
+      theme.apply();
+      enterDesktop(true);
+    },640);
+  }
+  drawStep();
+}
+
+/* ══════════ [JS-X] ВХОД НА РАБОЧИЙ СТОЛ ══════════ */
+function enterDesktop(firstRun){
+  bootTime=Date.now();
+  theme.apply();
+  renderDesktopIcons();
+  bus.emit('wm');
+  if(orb){orb.remove();}
+  orb=h('div',{class:'py-orb',title:'Jarvis'});
+  orb.append(h('span',{class:'ring'}),icon('mic'));
+  orb.addEventListener('click',function(){
+    if(jvPanel){closeJarvis();}else{openJarvis();}
+  });
+  orb.style.display=store.get('jarvis.on',true)?'grid':'none';
+  root.appendChild(orb);
+  jdot.classList.toggle('live',!!store.get('jarvis.on',true));
+  if(firstRun){
+    setTimeout(function(){
+      notify(SYS.name,'Добро пожаловать, '+store.get('user.name','Пользователь')+'! Система готова.','star');
+    },900);
+    setTimeout(function(){
+      notify('Jarvis','Орб в правом углу — кликните и скажите «помощь».','mic');
+    },3400);
+  }
+}
+
+/* ══════════ [JS-Y] ИНИЦИАЛИЗАЦИЯ ══════════ */
+plugins.loadAll();
+theme.apply();
+vfs.load();
+if(!store.get('oobe.done',false)){
+  runOOBE();
+}else{
+  bootSequence(false);
+  enterDesktop(false);
+}
+if('speechSynthesis' in window){
+  try{speechSynthesis.getVoices();}catch(e){}
+  speechSynthesis.onvoiceschanged=function(){
+    try{speechSynthesis.getVoices();}catch(e){}
+  };
+}
+root.addEventListener('contextmenu',function(e){
+  if(e.target.closest('.py-term,textarea,input')){return;}
+  if(!e.defaultPrevented&&!e.target.closest('.py-desktop')){e.preventDefault();}
+});
+/* публичный API для плагинов и консоли */
+window.PYOS={
+  version:SYS.version,
+  store:store,notify:notify,launch:launch,theme:theme,vfs:vfs,bus:bus,
+  jarvis:{
+    addCommand:function(re,fn){jarvis.custom.push({re:re,fn:fn});},
+    say:function(t){jarvis.say(t);}
+  },
+  plugins:{register:pluginAPI.plugins.register}
+};
+})();
+</script>
+</body>
+</html>
